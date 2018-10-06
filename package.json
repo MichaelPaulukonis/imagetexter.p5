@@ -5,7 +5,9 @@
   "scripts": {
     "start": "webpack-dev-server",
     "build": "npm run clean && webpack -p",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "deploy": "gh-pages -d dist",
+    "bump": "npm version patch"
   },
   "dependencies": {
     "p5": "^0.5.9"
