@@ -104,8 +104,7 @@ export default function Sketch(p5, t) {
 
   var jitRange = 20;
   function getJitter() {
-    // return random(-jitRange, jitRange);
-    return -jitRange + Math.floor(Math.random() * 2 * jitRange)
+    return getRandomInt(-jitRange, jitRange)
   }
 
   function setJitRange(direction) {
@@ -210,10 +209,14 @@ export default function Sketch(p5, t) {
     autoPaintMode = !autoPaintMode;
   }
 
+  const getRandomInt = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
   function autoPaintRegion(minX, minY, maxX, maxY) {
-    var locX = random(minX, maxX),
-      locY = random(minY, maxY);
-    paintWordAtPoint(locX, locY);
+    var locX = getRandomInt(minX, maxX)
+    let locY = getRandomInt(minY, maxY)
+    paintWordAtPoint(locX, locY)
   }
 
 
@@ -242,16 +245,16 @@ export default function Sketch(p5, t) {
   }
 
   const keyPresser = (keyCode) => {
-    if (keyCode == p5.UP || keyCode == p5.DOWN) {
-      if (keyCode == p5.UP) {
+    if (keyCode == p5.UP_ARROW || keyCode == p5.DOWN_ARROW) {
+      if (keyCode == p5.UP_ARROW) {
         changeTextsize(1);
       }
       else {
         changeTextsize(-1);
       }
     }
-    else if (keyCode == p5.RIGHT || keyCode == p5.LEFT) {
-      if (keyCode == p5.RIGHT) {
+    else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
+      if (keyCode == p5.RIGHT_ARROW) {
         setJitRange(1);
       }
       else {
