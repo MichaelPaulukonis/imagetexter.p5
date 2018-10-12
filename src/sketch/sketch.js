@@ -14,6 +14,7 @@
  DELETE - clear screen; sets to white/black depending upon black/white mode (default: black) 
  */
 import Undo from './undo.js'
+import { get } from 'https';
 
 export default function Sketch(p5, t) {
 
@@ -149,7 +150,6 @@ export default function Sketch(p5, t) {
     var w = t.getchar();
     nextY = nextY + yOffset;
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
-      // println(w + " : " + nextX + ", " + nextY);
       setFill(nextX, nextY);
       p5.text(w, nextX, nextY);
       nextX = nextX + p5.textWidth(w);
@@ -192,9 +192,12 @@ export default function Sketch(p5, t) {
 
       // this is the one I'm really interested in for the project
       case 2:
-        var pix = img.get(locX, locY)
-        p5.fill(pix);
-
+        var sx = locX
+        var sy = locY
+        // This is adapted from the get() source - but is faster, since loadPixels()
+        // is not performed on each iteration
+        var pix = img.drawingContext.getImageData(sx, sy, 1, 1).data;
+        p5.fill(pix[0], pix[1], pix[2], pix[3]);
         break;
 
       case 1:
@@ -211,7 +214,7 @@ export default function Sketch(p5, t) {
 
   const getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+  }
 
   function autoPaintRegion(minX, minY, maxX, maxY) {
     var locX = getRandomInt(minX, maxX)
