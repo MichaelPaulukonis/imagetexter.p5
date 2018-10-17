@@ -27,6 +27,7 @@ export default function Sketch(p5, t) {
   p5.setup = () => {
     const canvas = p5.createCanvas(700, 700)
     canvas.parent('sketch-holder')
+    canvas.drop(gotFile);
     // p5.colorMode(p5.RGB, p5.width, p5.height, 100);
     clearScreen();
     p5.textSize(textsize);
@@ -328,4 +329,19 @@ export default function Sketch(p5, t) {
         break;
     }
   }
+
+  function gotFile(file) {
+    // If it's an image file
+    if (file.type === 'image') {
+      // Create an image DOM element but don't show it
+      img = p5.loadImage(file.data, imageReady)
+      // Draw the image onto the canvas
+      // p5.image(img, 0, 0, p5.width, p5.height);
+      // img = p5.loadImage("./assets/001.jpg", imageReady)
+
+    } else {
+      p5.println('Not an image file!');
+    }
+  }
+
 }
