@@ -1,7 +1,6 @@
 export default class TextManager {
   constructor (text) {
     var defaultText = 'These are the pearls that were his eyes'
-    // var randomText = defaultText + '...........---___*****xxx                                            '
     var SPLIT_TOKENS = '[ ?.,;:<>()"]'
     var words = []
     var charIndex = 0

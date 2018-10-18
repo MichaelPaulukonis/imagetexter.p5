@@ -16,7 +16,7 @@
 import Undo from './undo.js'
 import { get } from 'https';
 
-export default function Sketch(p5, t) {
+export default function Sketch(p5, textManager) {
 
   var textsize = 10;
   var blackfield = '#000000';
@@ -24,11 +24,28 @@ export default function Sketch(p5, t) {
   var blackNotWhite = false;
   var img;
 
+  var bodycopy = ['These are the pearls that were his eyes']
+
+  const textInputBox = document.getElementById('bodycopy')
+
+  function getBodyCopy () {
+    return textInputBox.value
+  }
+  
+  function setBodyCopy (text) {
+    textInputBox.value = text
+  }
+
   p5.setup = () => {
     const canvas = p5.createCanvas(700, 700)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
-    // p5.colorMode(p5.RGB, p5.width, p5.height, 100);
+    setBodyCopy(p5.random(bodycopy))
+    textManager.setText(getBodyCopy())
+    const textButton = document.getElementById('applytext')
+    textButton.addEventListener('click', () => {
+      textManager.setText(getBodyCopy())
+    })
     clearScreen();
     p5.textSize(textsize);
     p5.textAlign(p5.CENTER, p5.CENTER);
@@ -67,7 +84,7 @@ export default function Sketch(p5, t) {
     // absolute positioning
     var offX = getJitter(), offY = getJitter();
     setFill(locX + offX, locY + offY);
-    p5.text(t.getWord(), locX + offX, locY + offY);
+    p5.text(textManager.getWord(), locX + offX, locY + offY);
   }
 
   // paint words AROUND the point in different sizes
@@ -148,13 +165,13 @@ export default function Sketch(p5, t) {
   function paintGrid() {
     p5.textAlign(p5.LEFT, p5.BOTTOM);
     var nextX = 0, nextY = 0, yOffset = (p5.textAscent() + p5.textDescent());
-    var w = t.getchar();
+    var w = textManager.getchar();
     nextY = nextY + yOffset;
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
       setFill(nextX, nextY);
       p5.text(w, nextX, nextY);
       nextX = nextX + p5.textWidth(w);
-      w = t.getchar();
+      w = textManager.getchar();
       if (nextX + p5.textWidth(w) > p5.width) {
         nextX = 0;
         nextY = nextY + yOffset;
