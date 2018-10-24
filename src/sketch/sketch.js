@@ -28,11 +28,11 @@ export default function Sketch(p5, textManager) {
 
   const textInputBox = document.getElementById('bodycopy')
 
-  function getBodyCopy () {
+  function getBodyCopy() {
     return textInputBox.value
   }
-  
-  function setBodyCopy (text) {
+
+  function setBodyCopy(text) {
     textInputBox.value = text
   }
 
@@ -134,8 +134,14 @@ export default function Sketch(p5, textManager) {
 
 
   const imageReady = () => {
-    img.resize(0, p5.height);
+    if (img.height < p5.height) {
+      img.resize(0, p5.height)
+    } else {
+      img.resize(p5.width, 0)
+      p5.resizeCanvas(p5.width, img.height)
+    }
     img.loadPixels()
+    clearScreen()
   }
 
   // select one of the 4 images
@@ -246,12 +252,20 @@ export default function Sketch(p5, textManager) {
     randomSizeMode = !randomSizeMode;
   }
 
-  function save() {
-    var filename = "image.text." + frameCount + ".png";
-    p5.saveFrame(filename);
-    console.log("saved as: " + filename);
-    return filename;
+  const saveSketch = () => {
+    const getDateFormatted = function () {
+      var d = new Date()
+      var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
+      return df
+    }
+
+    const pad = function (nbr, width, fill = '0') {
+      nbr = nbr + ''
+      return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
+    }
+    p5.saveCanvas(`imagetexter.${getDateFormatted()}.png`)
   }
+
 
   p5.keyPressed = () => {
     if (!mouseInCanvas()) return
@@ -330,7 +344,7 @@ export default function Sketch(p5, textManager) {
         break;
 
       case 's':
-        save();
+        saveSketch();
         break;
 
       case 'x':
@@ -350,12 +364,7 @@ export default function Sketch(p5, textManager) {
   function gotFile(file) {
     // If it's an image file
     if (file.type === 'image') {
-      // Create an image DOM element but don't show it
       img = p5.loadImage(file.data, imageReady)
-      // Draw the image onto the canvas
-      // p5.image(img, 0, 0, p5.width, p5.height);
-      // img = p5.loadImage("./assets/001.jpg", imageReady)
-
     } else {
       p5.println('Not an image file!');
     }
