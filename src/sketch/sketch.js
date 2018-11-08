@@ -24,8 +24,6 @@ export default function Sketch(p5, textManager) {
   var blackNotWhite = false;
   var img;
 
-  var bodycopy = ['These are the pearls that were his eyes']
-
   const textInputBox = document.getElementById('bodycopy')
 
   function getBodyCopy() {
@@ -40,8 +38,7 @@ export default function Sketch(p5, textManager) {
     const canvas = p5.createCanvas(700, 700)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
-    setBodyCopy(p5.random(bodycopy))
-    textManager.setText(getBodyCopy())
+    setBodyCopy(textManager.getText())
     const textButton = document.getElementById('applytext')
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
@@ -353,7 +350,6 @@ export default function Sketch(p5, textManager) {
         setFill(p5.mouseX, p5.mouseY);
         break;
 
-      // not working in processing.js
       case p5.DELETE:
       case p5.BACKSPACE:
         clearScreen();

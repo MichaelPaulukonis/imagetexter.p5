@@ -10,7 +10,8 @@
     "bump": "npm version patch"
   },
   "dependencies": {
-    "p5": "^0.5.9"
+    "p5": "^0.5.9",
+    "query-string": "^6.2.0"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",
