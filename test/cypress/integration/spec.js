@@ -7,6 +7,8 @@ describe('default sketch page tests', () => {
             // repeating it in every test.
             cy.visit('/');
         });
+        // I am unsure if I will use the data-qa approach with this application
+        // leaving the below in to remind me to think about it.
         // By using `data-qa` selectors, we can separate
         // CSS selectors used for styling from those used
         // exclusively for testing our application.
