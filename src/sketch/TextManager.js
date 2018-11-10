@@ -2,10 +2,10 @@ export default class TextManager {
   constructor (text) {
     var defaultText = 'These are the pearls that were his eyes'
     var SPLIT_TOKENS = '[ ?.,;:<>()"]'
-    var words = []
     var charIndex = 0
     var wordIndex = 0
     let self = this
+    self.words = []
     self.getchar = function () {
       var c = self.w.charAt(charIndex)
       charIndex = (charIndex + 1) % self.w.length
@@ -15,8 +15,8 @@ export default class TextManager {
       return self.w.charAt(Math.floor(Math.random() * self.w.length))
     }
     self.getWord = function () {
-      var word = words[wordIndex]
-      wordIndex = (wordIndex + 1) % words.length
+      var word = self.words[wordIndex]
+      wordIndex = (wordIndex + 1) % self.words.length
       return word
     }
     self.getText = function () {
@@ -24,7 +24,7 @@ export default class TextManager {
     }
     self.setText = function (text) {
       self.w = text
-      words = self.w.split(new RegExp(SPLIT_TOKENS, 'g'))
+      self.words = self.w.split(new RegExp(SPLIT_TOKENS, 'g'))
       wordIndex = 0
       charIndex = 0
     }
