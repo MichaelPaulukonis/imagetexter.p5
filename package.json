@@ -8,11 +8,10 @@
     "clean": "rm -rf dist",
     "deploy": "gh-pages -d dist",
     "bump": "npm version patch",
-    "cypress": "cypress run --reporter junit --reporter-options \"mochaFile=build/cypress-results.xml,toConsole=true\"",
+    "cypress": "cypress run --reporter junit --reporter-options \"mochaFile=test/results/cypress-results.xml,toConsole=true\"",
     "cypress:open": "cypress open",
-    "start:test_server": "node ./cypress/server",
-    "cypress:buildserver": "start-server-and-test start:test_server http://localhost:8087 cypress",
-    "cypress:open:buildserver": "start-server-and-test start:test_server http://localhost:8087 cypress-open"
+    "cypress:buildserver": "start-server-and-test start http://localhost:8080 cypress",
+    "cypress:open:buildserver": "start-server-and-test start http://localhost:8080 cypress:open"
   },
   "dependencies": {
     "p5": "^0.5.9"
@@ -26,6 +25,7 @@
     "cypress": "^3.1.1",
     "gh-pages": "^2.0.1",
     "html-webpack-plugin": "^2.28.0",
+    "start-server-and-test": "^1.7.9",
     "webpack": "^2.5.1",
     "webpack-dev-server": "^2.4.5"
   }
