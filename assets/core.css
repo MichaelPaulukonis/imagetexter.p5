@@ -63,3 +63,6 @@ canvas {
     height: 0 !important;
 }
 
+.hide {
+    visibility: hidden;
+ }

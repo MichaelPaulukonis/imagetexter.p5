@@ -1,31 +1,22 @@
 describe('default sketch page tests', () => {
     describe('Should display the default sketch page with expected elements...', () => {
+        const suppliedText = 'What words? Deadlocked. Explosion.'
         beforeEach(() => {
             // Because we're only testing the homepage
             // in this test file, we can run this command
             // before each individual test instead of
             // repeating it in every test.
-            cy.visit('/');
+            cy.visit(`/?text=${suppliedText}&autoPaint=true&autoSave=true`);
+            cy.wait(3000);
         });
-        // I am unsure if I will use the data-qa approach with this application
-        // leaving the below in to remind me to think about it.
-        // By using `data-qa` selectors, we can separate
-        // CSS selectors used for styling from those used
-        // exclusively for testing our application.
-        // See: https://docs.cypress.io/guides/references/best-practices.html#Selecting-Elements
-        it('... has a canvas', () => {
-            // p5js creates the canvas with a predefined id that we have no control over
-            cy.get('#sketch-holder > canvas').should('be.visible');
-        })
-        it('... has bodycopy', () => {
-            cy.get('#bodycopy').should('be.visible');
-        })
-        it('... has applytext button', () => {
-            const at = cy.get('#applytext')
-            at.should('be.visible');
-        })
-        it('... has focus (on canvas) element', () => {
-            cy.get('#focus').should('be.visible');
+        it('... bodycopy contains supplied text', () => {
+            cy.get('#bodycopy')
+                .should('be.visible')
+            cy.get('#sketch-holder > canvas')
+                .should('be.visible')
+                .trigger('mousemove', 200, 200)
+            cy.get('body').type('g') // okay, nothing happens. AAAARGH
+            cy.wait(1000)
         })
     });
 })

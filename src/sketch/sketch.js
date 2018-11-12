@@ -16,7 +16,7 @@
 import Undo from './undo.js'
 import { get } from 'https';
 
-export default function Sketch(p5, textManager) {
+export default function Sketch(p5, textManager, params) {
 
   var textsize = 10;
   var blackfield = '#000000';
@@ -25,6 +25,9 @@ export default function Sketch(p5, textManager) {
   var img;
 
   const textInputBox = document.getElementById('bodycopy')
+  // const imageLoaded = p5.Element(document.getElementById('imageLoaded'))
+  const imageLoadedDisplay = p5.select('#imageLoaded')
+  let imageLoaded = false
 
   function getBodyCopy() {
     return textInputBox.value
@@ -47,18 +50,30 @@ export default function Sketch(p5, textManager) {
     p5.textSize(textsize);
     p5.textAlign(p5.CENTER, p5.CENTER);
     p5.frameRate(60); // change if paint events seem to be too rapid
-    curPaintMode = 2; // paint with background var.
+    curPaintMode = params.paintMode || 2; // paint with background var.
     setImage(4);
   }
 
   p5.draw = () => {
+    // if autopaint AND the image has been imageLoaded....
+    if (params.autoPaint && imageLoaded) {
+      paintGrid()
+      params.autoPaint = false
+      console.log('painted!')
+      return
+    }
+    if(params.autoSave && imageLoaded) {
+      saveSketch()
+      params.autoSave = false
+      console.log('saved!')
+    }
+
     if (autoPaintMode) {
       autoPaintRegion(0, 0, p5.width, p5.height);
       return;
     }
 
-    if (p5.mouseIsPressed && p5.mouseY > 0 && p5.mouseY < p5.height
-      && p5.mouseX > 0 && p5.mouseX < p5.width) {
+    if (p5.mouseIsPressed && mouseInCanvas()) {
       paintWordAtPoint(p5.mouseX, p5.mouseY);
     }
   }
@@ -139,12 +154,18 @@ export default function Sketch(p5, textManager) {
     }
     img.loadPixels()
     clearScreen()
+    imageLoadedDisplay.removeClass('hide')
+    imageLoaded = true
   }
 
   // select one of the 4 images
   // this BEGS for a refactoring
   /* @pjs preload="001.jpg,002.jpg,003.jpg,004.jpg"; */
   function setImage(image) {
+    if (imageLoadedDisplay.class() !== 'hide') {
+      imageLoadedDisplay.addClass('hide')
+    }
+    imageLoaded = false
     switch (image) {
       case 1:
         img = p5.loadImage("./assets/001.jpg", imageReady)
