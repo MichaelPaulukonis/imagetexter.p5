@@ -36,6 +36,14 @@ Also online @ https://michaelpaulukonis.github.io/imagetexter.p5/
 
 ## image sources
   - [Motherwell's Elegy to the Spanish Republic)[https://www.flickr.com/photos/clairity/19325098566]
+https://images.nga.gov/en/set/show_content_page.html?category=16&set=11&qw=
+https://archive.org/details/metropolitanmuseumofart-gallery?&sort=-downloads
+https://www.pablopicasso.org/picasso-paintings.jsp
+https://pixabay.com/en/photos/?q=random&hp=&image_type=photo&order=popular&cat=&min_width=&min_height=
+https://www.pluralsight.com/guides/using-the-unsplash-api
+https://github.com/YahiaElTai/cool-images
+https://github.com/nimojs/unsplash
+https://www.npmjs.com/package/random-flickr
 
 
 # build and deploy
@@ -43,3 +51,5 @@ Also online @ https://michaelpaulukonis.github.io/imagetexter.p5/
 1. `npm run bump`
 1. `npm run build`
 1. `npm run deploy`
+
+

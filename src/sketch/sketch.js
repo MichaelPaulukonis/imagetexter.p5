@@ -182,6 +182,10 @@ export default function Sketch(p5, textManager, params) {
       case 4:
         img = p5.loadImage("./assets/004.jpg", imageReady)
         break;
+
+      case 5:
+        let fileName = getRandom(params.images)
+        img = p5.loadImage(`./assets/images/${fileName}`, imageReady)
     }
   }
 
@@ -256,6 +260,10 @@ export default function Sketch(p5, textManager, params) {
 
   const getRandomInt = (min, max) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  const getRandom = (arr) => {
+    return arr[getRandomInt(0, arr.length-1)]
   }
 
   function autoPaintRegion(minX, minY, maxX, maxY) {
@@ -336,6 +344,10 @@ export default function Sketch(p5, textManager, params) {
 
       case '4':
         setImage(4);
+        break;
+
+      case '5':
+        setImage(5);
         break;
 
       case 'a':
