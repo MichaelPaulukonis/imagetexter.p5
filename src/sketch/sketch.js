@@ -13,19 +13,17 @@
  x - change black/white mode. mostly applies to alternate paint modes, or clearing screen
  DELETE - clear screen; sets to white/black depending upon black/white mode (default: black) 
  */
-import Undo from './undo.js'
-import { get } from 'https';
+import Undo from './undo.js' // TODO: implement
 
 export default function Sketch(p5, textManager, params) {
 
-  var textsize = 10;
+  params.textsize = 10;
   var blackfield = '#000000';
   var whitefield = '#FFFFFF';
-  var blackNotWhite = false;
+  params.blackNotWhite = false;
   var img;
 
   const textInputBox = document.getElementById('bodycopy')
-  // const imageLoaded = p5.Element(document.getElementById('imageLoaded'))
   const imageLoadedDisplay = p5.select('#imageLoaded')
   let imageLoaded = false
 
@@ -42,12 +40,14 @@ export default function Sketch(p5, textManager, params) {
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
     setBodyCopy(textManager.getText())
+    // TODO: make this selectable (and store some local fonts)
+    p5.textFont('Georgia');
     const textButton = document.getElementById('applytext')
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
     })
     clearScreen();
-    p5.textSize(textsize);
+    p5.textSize(params.textsize);
     p5.textAlign(p5.CENTER, p5.CENTER);
     p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background var.
@@ -92,7 +92,6 @@ export default function Sketch(p5, textManager, params) {
   }
 
   function paintStaticSizedWordAtPoint(locX, locY) {
-
     // absolute positioning
     var offX = getJitter(), offY = getJitter();
     setFill(locX + offX, locY + offY);
@@ -101,14 +100,9 @@ export default function Sketch(p5, textManager, params) {
 
   // paint words AROUND the point in different sizes
   function spatterWordAtPoint(locX, locY) {
-
-    var origTextSize = textsize;
-
-    p5.textSize(randomTextSize(origTextSize));
-
+    p5.textSize(randomTextSize(params.textsize));
     paintStaticSizedWordAtPoint(locX, locY);
-
-    p5.textSize(origTextSize); // restore original size
+    p5.textSize(params.textsize); // restore original size
   }
 
 
@@ -121,15 +115,15 @@ export default function Sketch(p5, textManager, params) {
 
 
   function clearScreen() {
-    var field = blackNotWhite ? whitefield : blackfield;
+    var field = params.blackNotWhite ? whitefield : blackfield;
     p5.background(field);
   }
 
   function changeTextsize(direction) {
     var step = 5;
-    textsize = (textsize + step * direction);
-    if (textsize < 1) textsize = step;
-    p5.textSize(textsize);
+    params.textsize = (params.textsize + step * direction);
+    if (params.textsize < 1) params.textsize = step;
+    p5.textSize(params.textsize);
   }
 
 
@@ -192,7 +186,13 @@ export default function Sketch(p5, textManager, params) {
   // print a grid of characters from upper-left to lower-right
   function paintGrid() {
     p5.textAlign(p5.LEFT, p5.BOTTOM);
-    var nextX = 0, nextY = 0, yOffset = (p5.textAscent() + p5.textDescent());
+    var nextX = 0
+    var nextY = 0
+    // TODO: make this somewhat tweakable
+    // same too the space between
+    // var yOffset = (p5.textAscent() + p5.textDescent());
+    var yOffset = p5.textAscent() //+ p5.textDescent());
+
     var w = textManager.getchar();
     nextY = nextY + yOffset;
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
@@ -227,11 +227,11 @@ export default function Sketch(p5, textManager, params) {
 
       case 0:
       default:
-        if (blackNotWhite) {
-          p5.fill(0, p5.height, 0);
+        if (params.blackNotWhite) {
+          p5.fill(blackfield);
         }
         else {
-          p5.fill(0, 0, 100);
+          p5.fill(whitefield);
         }
 
         break;
@@ -379,7 +379,7 @@ export default function Sketch(p5, textManager, params) {
 
       case 'x':
       case 'X':
-        blackNotWhite = !blackNotWhite;
+        params.blackNotWhite = !params.blackNotWhite;
         setFill(p5.mouseX, p5.mouseY);
         break;
 

@@ -1,6 +1,27 @@
 export default class TextManager {
   constructor (text) {
-    var defaultText = 'These are the pearls that were his eyes'
+    var defaultText = `Come unto these yellow sands,
+And then take hands:
+Curtsied when you have, and kiss'd
+The wild waves whist,
+Foot it featly here and there;
+And, sweet sprites, the burthen bear.
+Hark, hark!
+Bow-wow.
+The watch-dogs bark.
+Bow-wow.
+Hark, hark! I hear
+The strain of strutting chanticleer
+Cry, Cock-a-diddle-dow.
+Full fathom five thy father lies;
+Of his bones are coral made;
+Those are pearls that were his eyes:
+Nothing of him that doth fade,
+But doth suffer a sea-change
+Into something rich and strange.
+Sea-nymphs hourly ring his knell:
+Ding-dong.
+Hark! now I hear them—Ding-dong, bell.`
     var SPLIT_TOKENS = '[ ?.,;:<>()"]'
     var charIndex = 0
     var wordIndex = 0

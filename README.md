@@ -44,6 +44,7 @@ https://www.pluralsight.com/guides/using-the-unsplash-api
 https://github.com/YahiaElTai/cool-images
 https://github.com/nimojs/unsplash
 https://www.npmjs.com/package/random-flickr
+https://medium.com/quick-code/how-to-quickly-generate-a-random-gallery-of-images-from-an-unsplash-collection-in-javascript-4ddb2a6a4faf
 
 
 # build and deploy
