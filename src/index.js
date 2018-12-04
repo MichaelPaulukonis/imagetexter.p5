@@ -3,6 +3,7 @@ import 'p5/lib/addons/p5.dom'
 import queryString from 'query-string'
 import TextManager from './sketch/TextManager'
 import Sketch from './sketch/sketch.js'
+import GuiControl from './sketch/gui.js'
 
 let loc = location || {}
 let queryParams = queryString.parse(loc.search)
@@ -11,12 +12,13 @@ console.log(`APP-VERSION: ${VERSION}`)
 console.log(`params: ${JSON.stringify(queryParams)}`)
 
 let suppliedText = queryParams.text || ''
-let params = {
-  autoPaint: queryParams.autoPaint || false,
-  autoSave: queryParams.autoSave || false
-}
 let t = new TextManager(suppliedText)
-params.images = [
+
+let gc = new GuiControl()
+gc.params.autoPaintGrid |= queryParams.autoPaintGrid // this is to paint the grid - RENAME
+gc.params.autoSave = queryParams.autoSave || false
+
+gc.params.images = [
   'A11288.jpg',
   'A11309.jpg',
   'A14854.jpg',
@@ -47,7 +49,7 @@ params.images = [
 
 const launchSketch = () => {
   function builder (p) {
-    myP5 = new Sketch(p, t, params)
+    myP5 = new Sketch(p, t, gc.params)
   }
 
   var myP5 = new P5(builder)

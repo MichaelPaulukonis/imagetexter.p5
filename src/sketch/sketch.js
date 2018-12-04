@@ -17,7 +17,7 @@ import Undo from './undo.js' // TODO: implement
 
 export default function Sketch(p5, textManager, params) {
 
-  params.textsize = 10;
+  params.textsize = params.textsize || 10;
   var blackfield = '#000000';
   var whitefield = '#FFFFFF';
   params.blackNotWhite = false;
@@ -56,9 +56,9 @@ export default function Sketch(p5, textManager, params) {
 
   p5.draw = () => {
     // if autopaint AND the image has been imageLoaded....
-    if (params.autoPaint && imageLoaded) {
+    if (params.autoPaintGrid && imageLoaded) {
       paintGrid()
-      params.autoPaint = false
+      params.autoPaintGrid = false
       console.log('painted!')
       return
     }
@@ -68,7 +68,7 @@ export default function Sketch(p5, textManager, params) {
       console.log('saved!')
     }
 
-    if (autoPaintMode) {
+    if (params.autoPaintMode) {
       autoPaintRegion(0, 0, p5.width, p5.height);
       return;
     }
@@ -253,9 +253,8 @@ export default function Sketch(p5, textManager, params) {
     }
   }
 
-  var autoPaintMode = false;
   function toggleAutoPaintMode() {
-    autoPaintMode = !autoPaintMode;
+    params.autoPaintMode = !params.autoPaintMode;
   }
 
   const getRandomInt = (min, max) => {

@@ -9,7 +9,7 @@ describe('default sketch page tests', () => {
             // TODO: need to be able to pass in what image to use
             // url so not everything in library
             // but locally, URL could be local
-            cy.visit(`/?text=${suppliedText}&autoPaint=true&autoSave=true`);
+            cy.visit(`/?text=${suppliedText}&autoPaintGrid=true&autoSave=true`);
             cy.wait(3000);
         });
         it('... bodycopy contains supplied text', () => {
