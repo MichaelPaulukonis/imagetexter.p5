@@ -9,7 +9,7 @@ export default class GuiControl {
                 cnvs = cnvs[0]
             }
             setfocus()
-            this.params.save = sketch.save_sketch
+            this.params.save = sketch.saveSketch
             this.params.clear = sketch.clearCanvas
         }
         var setfocus = function () {
@@ -27,19 +27,22 @@ export default class GuiControl {
         let fc = document.getElementById('focus')
         if (fc) fc.onclick = setfocus
 
+        const fontList = ['Georgia', 'Helvetica', 'Courier New']
+
         var paramsInitial = {
             name: 'image.texter',
             open: this.openCanvasInNewTab,
-            // bind after defined in sketch
+            // bind after defined in sketch (call setupGui)
             save: () => { },
             clear: () => { },
             drawMode: 1,
             textsize: 10,
-            autoPaintMode: false
+            autoPaintMode: false,
+            font: fontList[0]
           }
 
         let params = Object.assign({}, paramsInitial)
-        var gui = new dat.GUI()
+        var gui = new dat.GUI({name: 'newgui'})
         gui.remember(params)
         gui.add(params, 'name')
         gui.add(params, 'open')
@@ -47,7 +50,7 @@ export default class GuiControl {
         gui.add(params, 'clear')
         gui.add(params, 'textsize').min(4).max(64).step(1)
         gui.add(params, 'autoPaintMode').listen()
-
+        gui.add(params, 'font', fontList).listen()
         this.params = params
     }
 }

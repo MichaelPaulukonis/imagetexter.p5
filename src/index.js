@@ -49,7 +49,7 @@ gc.params.images = [
 
 const launchSketch = () => {
   function builder (p) {
-    myP5 = new Sketch(p, t, gc.params)
+    myP5 = new Sketch(p, t, gc.params, gc)
   }
 
   var myP5 = new P5(builder)

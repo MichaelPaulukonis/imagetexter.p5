@@ -15,7 +15,7 @@
  */
 import Undo from './undo.js' // TODO: implement
 
-export default function Sketch(p5, textManager, params) {
+export default function Sketch(p5, textManager, params, guiControl) {
 
   params.textsize = params.textsize || 10;
   var blackfield = '#000000';
@@ -40,21 +40,22 @@ export default function Sketch(p5, textManager, params) {
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
     setBodyCopy(textManager.getText())
-    // TODO: make this selectable (and store some local fonts)
-    p5.textFont('Georgia');
     const textButton = document.getElementById('applytext')
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
     })
-    clearScreen();
+    clearCanvas();
     p5.textSize(params.textsize);
     p5.textAlign(p5.CENTER, p5.CENTER);
     p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background var.
+    guiControl.setupGui(this)
     setImage(4);
+
   }
 
   p5.draw = () => {
+    p5.textFont(params.font)
     // if autopaint AND the image has been imageLoaded....
     if (params.autoPaintGrid && imageLoaded) {
       paintGrid()
@@ -114,11 +115,12 @@ export default function Sketch(p5, textManager, params) {
   }
 
 
-  function clearScreen() {
+  const clearCanvas = () => {
     var field = params.blackNotWhite ? whitefield : blackfield;
     p5.background(field);
   }
-
+  this.clearCanvas = clearCanvas
+  
   function changeTextsize(direction) {
     var step = 5;
     params.textsize = (params.textsize + step * direction);
@@ -147,7 +149,7 @@ export default function Sketch(p5, textManager, params) {
       p5.resizeCanvas(p5.width, img.height)
     }
     img.loadPixels()
-    clearScreen()
+    clearCanvas()
     imageLoadedDisplay.removeClass('hide')
     imageLoaded = true
   }
@@ -290,7 +292,7 @@ export default function Sketch(p5, textManager, params) {
     }
     p5.saveCanvas(`imagetexter.${getDateFormatted()}.png`)
   }
-
+  this.saveSketch = saveSketch
 
   p5.keyPressed = () => {
     if (!mouseInCanvas()) return
@@ -322,7 +324,7 @@ export default function Sketch(p5, textManager, params) {
       }
     }
     else if (keyCode == p5.BACKSPACE || keyCode == p5.DELETE) {
-      clearScreen();
+      clearCanvas();
     }
   }
 
@@ -354,7 +356,7 @@ export default function Sketch(p5, textManager, params) {
         break;
 
       case 'c':
-        clearScreen();
+        clearCanvas();
         break;
 
       case 'g':
@@ -384,7 +386,7 @@ export default function Sketch(p5, textManager, params) {
 
       case p5.DELETE:
       case p5.BACKSPACE:
-        clearScreen();
+        clearCanvas();
         break;
     }
   }
