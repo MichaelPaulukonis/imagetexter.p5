@@ -8,6 +8,7 @@
     "clean": "rm -rf dist",
     "deploy": "gh-pages -d dist",
     "bump": "npm version patch",
+    "push": "npm run bump && npm run build && npm run deploy",
     "cypress": "cypress run --reporter junit --reporter-options \"mochaFile=test/results/cypress-results.xml,toConsole=true\"",
     "cypress:open": "cypress open",
     "cypress:buildserver": "start-server-and-test start http://localhost:8080 cypress",
