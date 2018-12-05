@@ -1,17 +1,42 @@
 import * as dat from './dat.gui.js'
+import saveAs from 'file-saver'
 
 export default class GuiControl {
     constructor() {
         var cnvs
-        this.setupGui = function (sketch) {
+        this.setupGui = (sketch) => {
             cnvs = document.getElementsByTagName('canvas')
             if (cnvs && cnvs[0]) {
                 cnvs = cnvs[0]
             }
             setfocus()
-            this.params.save = sketch.saveSketch
             this.params.clear = sketch.clearCanvas
+            sketch.saveSketch = saveSketch
+            this.params.save = sketch.saveSketch
+
+            this.imageChange = (fileName) => {
+                sketch.setImage(`./assets/images/${fileName}`)
+            }
+            this.gui['__controllers'][7].onChange(this.imageChange) // TODO: ugh, this can't be right
         }
+
+        // TODO: also need to re-implement open-in-tab
+        const saveSketch = () => {
+            const getDateFormatted = function () {
+                var d = new Date()
+                var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
+                return df
+            }
+
+            const pad = function (nbr, width, fill = '0') {
+                nbr = nbr + ''
+                return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
+            }
+            cnvs.toBlob((blob) => {
+                saveAs(blob, `imagetexter.${getDateFormatted()}.png`)
+            })
+        }
+
         var setfocus = function () {
             cnvs.focus()
         }
@@ -28,29 +53,62 @@ export default class GuiControl {
         if (fc) fc.onclick = setfocus
 
         const fontList = ['Georgia', 'Helvetica', 'Courier New']
-
+        const imageList = [
+            'A11288.jpg',
+            'A11309.jpg',
+            'A14854.jpg',
+            'A15225.jpg',
+            'A15324.jpg',
+            'A15528.jpg',
+            'A17014.jpg',
+            'A17037.jpg',
+            'A17070.jpg',
+            'A17275.jpg',
+            'A18640.jpg',
+            'A18663.jpg',
+            'A21721.jpg',
+            'A23208.jpg',
+            'A26576.jpg',
+            'A30448.jpg',
+            'A30827.jpg',
+            'A35075.jpg',
+            'A38696.jpg',
+            'A40874.jpg',
+            'A43727.jpg',
+            'accordionist.jpg',
+            'head-of-a-woman.jpg',
+            'large-bather.jpg',
+            'painter-and-model.jpg',
+            'self-portrait.jpg'
+        ]
         var paramsInitial = {
             name: 'image.texter',
             open: this.openCanvasInNewTab,
             // bind after defined in sketch (call setupGui)
-            save: () => { },
+            save: saveSketch,
             clear: () => { },
             drawMode: 1,
             textsize: 10,
             autoPaintMode: false,
-            font: fontList[0]
-          }
+            font: fontList[0],
+            image: imageList[0]
+        }
+
+        this.imageChange = () => { }
+        let imageChange = this.imageChange
 
         let params = Object.assign({}, paramsInitial)
-        var gui = new dat.GUI({name: 'newgui'})
+        let gui = new dat.GUI({ name: 'newgui' })
         gui.remember(params)
         gui.add(params, 'name')
         gui.add(params, 'open')
         gui.add(params, 'save')
         gui.add(params, 'clear')
-        gui.add(params, 'textsize').min(4).max(64).step(1)
+        gui.add(params, 'textsize').min(4).max(64).step(1).listen()
         gui.add(params, 'autoPaintMode').listen()
         gui.add(params, 'font', fontList).listen()
+        gui.add(params, 'image', imageList).onChange(imageChange)
         this.params = params
+        this.gui = gui
     }
 }

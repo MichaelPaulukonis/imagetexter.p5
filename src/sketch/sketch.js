@@ -15,7 +15,7 @@
  */
 import Undo from './undo.js' // TODO: implement
 
-export default function Sketch(p5, textManager, params, guiControl) {
+export default function Sketch (p5, textManager, params, guiControl) {
 
   params.textsize = params.textsize || 10;
   var blackfield = '#000000';
@@ -27,11 +27,11 @@ export default function Sketch(p5, textManager, params, guiControl) {
   const imageLoadedDisplay = p5.select('#imageLoaded')
   let imageLoaded = false
 
-  function getBodyCopy() {
+  function getBodyCopy () {
     return textInputBox.value
   }
 
-  function setBodyCopy(text) {
+  function setBodyCopy (text) {
     textInputBox.value = text
   }
 
@@ -50,7 +50,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
     p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background var.
     guiControl.setupGui(this)
-    setImage(4);
+    parseImageSelection(4);
 
   }
 
@@ -63,7 +63,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
       console.log('painted!')
       return
     }
-    if(params.autoSave && imageLoaded) {
+    if (params.autoSave && imageLoaded) {
       saveSketch()
       params.autoSave = false
       console.log('saved!')
@@ -83,7 +83,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
     return p5.mouseY > 0 && p5.mouseY < p5.height && p5.mouseX > 0 && p5.mouseX < p5.width
   }
 
-  function paintWordAtPoint(locX, locY) {
+  function paintWordAtPoint (locX, locY) {
     if (randomSizeMode) {
       spatterWordAtPoint(locX, locY);
     }
@@ -92,7 +92,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
     }
   }
 
-  function paintStaticSizedWordAtPoint(locX, locY) {
+  function paintStaticSizedWordAtPoint (locX, locY) {
     // absolute positioning
     var offX = getJitter(), offY = getJitter();
     setFill(locX + offX, locY + offY);
@@ -100,14 +100,14 @@ export default function Sketch(p5, textManager, params, guiControl) {
   }
 
   // paint words AROUND the point in different sizes
-  function spatterWordAtPoint(locX, locY) {
+  function spatterWordAtPoint (locX, locY) {
     p5.textSize(randomTextSize(params.textsize));
     paintStaticSizedWordAtPoint(locX, locY);
     p5.textSize(params.textsize); // restore original size
   }
 
 
-  function randomTextSize(prevSize) {
+  function randomTextSize (prevSize) {
     var offset = getJitter();
     var newsize = offset + prevSize;
     if (newsize < 2) newsize = 2;
@@ -120,8 +120,8 @@ export default function Sketch(p5, textManager, params, guiControl) {
     p5.background(field);
   }
   this.clearCanvas = clearCanvas
-  
-  function changeTextsize(direction) {
+
+  function changeTextsize (direction) {
     var step = 5;
     params.textsize = (params.textsize + step * direction);
     if (params.textsize < 1) params.textsize = step;
@@ -130,11 +130,11 @@ export default function Sketch(p5, textManager, params, guiControl) {
 
 
   var jitRange = 20;
-  function getJitter() {
+  function getJitter () {
     return getRandomInt(-jitRange, jitRange)
   }
 
-  function setJitRange(direction) {
+  function setJitRange (direction) {
     var step = 5;
     jitRange = (jitRange + step * direction);
     if (jitRange < 1) jitRange = 1;
@@ -157,36 +157,45 @@ export default function Sketch(p5, textManager, params, guiControl) {
   // select one of the 4 images
   // this BEGS for a refactoring
   /* @pjs preload="001.jpg,002.jpg,003.jpg,004.jpg"; */
-  function setImage(image) {
-    if (imageLoadedDisplay.class() !== 'hide') {
-      imageLoadedDisplay.addClass('hide')
-    }
-    imageLoaded = false
+  function parseImageSelection (image) {
+
     switch (image) {
       case 1:
-        img = p5.loadImage("./assets/001.jpg", imageReady)
+        setImage("./assets/001.jpg")
         break;
 
       case 2:
-        img = p5.loadImage("./assets/002.jpg", imageReady)
+        setImage("./assets/002.jpg")
         break;
 
       case 3:
-        img = p5.loadImage("./assets/003.jpg", imageReady)
+        setImage("./assets/003.jpg")
         break;
 
       case 4:
-        img = p5.loadImage("./assets/004.jpg", imageReady)
+        setImage("./assets/004.jpg")
         break;
 
       case 5:
         let fileName = getRandom(params.images)
-        img = p5.loadImage(`./assets/images/${fileName}`, imageReady)
+        setImage(`./assets/images/${fileName}`)
+      // img = p5.loadImage(`./assets/images/${fileName}`, imageReady)
     }
   }
 
+  const setImage = (filename) => {
+    if (imageLoadedDisplay.class() !== 'hide') {
+      imageLoadedDisplay.addClass('hide')
+    }
+    imageLoaded = false
+    img = p5.loadImage(filename, imageReady)
+  }
+  this.setImage = setImage
+
   // print a grid of characters from upper-left to lower-right
-  function paintGrid() {
+  // something about painting the grid causes the saving to fail
+  // not with a code error or exception, but some kind of "network error"
+  function paintGrid () {
     p5.textAlign(p5.LEFT, p5.BOTTOM);
     var nextX = 0
     var nextY = 0
@@ -213,12 +222,12 @@ export default function Sketch(p5, textManager, params, guiControl) {
 
   var paintModes = 3;
   var curPaintMode = 0;
-  function nextPaintMode(direction) {
+  function nextPaintMode (direction) {
     curPaintMode = (curPaintMode + direction) % paintModes;
     if (curPaintMode < 0) curPaintMode = paintModes - 1;
   }
 
-  function setFill(locX, locY) {
+  function setFill (locX, locY) {
 
     if (locX < 0) locX = 0;
     if (locX >= p5.width) locX = p5.width - 1;
@@ -240,11 +249,9 @@ export default function Sketch(p5, textManager, params, guiControl) {
 
       // this is the one I'm really interested in for the project
       case 2:
-        var sx = locX
-        var sy = locY
         // This is adapted from the get() source - but is faster, since loadPixels()
         // is not performed on each iteration
-        var pix = img.drawingContext.getImageData(sx, sy, 1, 1).data;
+        var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data;
         p5.fill(pix[0], pix[1], pix[2], pix[3]);
         break;
 
@@ -255,7 +262,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
     }
   }
 
-  function toggleAutoPaintMode() {
+  function toggleAutoPaintMode () {
     params.autoPaintMode = !params.autoPaintMode;
   }
 
@@ -264,10 +271,10 @@ export default function Sketch(p5, textManager, params, guiControl) {
   }
 
   const getRandom = (arr) => {
-    return arr[getRandomInt(0, arr.length-1)]
+    return arr[getRandomInt(0, arr.length - 1)]
   }
 
-  function autoPaintRegion(minX, minY, maxX, maxY) {
+  function autoPaintRegion (minX, minY, maxX, maxY) {
     var locX = getRandomInt(minX, maxX)
     let locY = getRandomInt(minY, maxY)
     paintWordAtPoint(locX, locY)
@@ -275,24 +282,24 @@ export default function Sketch(p5, textManager, params, guiControl) {
 
 
   let randomSizeMode = true;
-  function toggleRandomSizeMode() {
+  function toggleRandomSizeMode () {
     randomSizeMode = !randomSizeMode;
   }
 
-  const saveSketch = () => {
-    const getDateFormatted = function () {
-      var d = new Date()
-      var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
-      return df
-    }
+  // const saveSketch = () => {
+  //   const getDateFormatted = function () {
+  //     var d = new Date()
+  //     var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
+  //     return df
+  //   }
 
-    const pad = function (nbr, width, fill = '0') {
-      nbr = nbr + ''
-      return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
-    }
-    p5.saveCanvas(`imagetexter.${getDateFormatted()}.png`)
-  }
-  this.saveSketch = saveSketch
+  //   const pad = function (nbr, width, fill = '0') {
+  //     nbr = nbr + ''
+  //     return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
+  //   }
+  //   p5.saveCanvas(`imagetexter.${getDateFormatted()}.png`)
+  // }
+  // this.saveSketch = saveSketch
 
   p5.keyPressed = () => {
     if (!mouseInCanvas()) return
@@ -328,27 +335,27 @@ export default function Sketch(p5, textManager, params, guiControl) {
     }
   }
 
-  function keyHandler(char) {
+  function keyHandler (char) {
     switch (char) {
 
       case '1':
-        setImage(1);
+        parseImageSelection(1);
         break;
 
       case '2':
-        setImage(2);
+        parseImageSelection(2);
         break;
 
       case '3':
-        setImage(3);
+        parseImageSelection(3);
         break;
 
       case '4':
-        setImage(4);
+        parseImageSelection(4);
         break;
 
       case '5':
-        setImage(5);
+        parseImageSelection(5);
         break;
 
       case 'a':
@@ -391,7 +398,7 @@ export default function Sketch(p5, textManager, params, guiControl) {
     }
   }
 
-  function gotFile(file) {
+  function gotFile (file) {
     // If it's an image file
     if (file.type === 'image') {
       img = p5.loadImage(file.data, imageReady)
