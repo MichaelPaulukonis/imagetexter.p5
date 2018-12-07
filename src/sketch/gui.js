@@ -37,6 +37,7 @@ export default class GuiControl {
                 nbr = nbr + ''
                 return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
             }
+            // TODO: WE WANT TO GET LAYER 1 ACTUALLY UGH UGH UGH
             cnvs.toBlob((blob) => {
                 saveAs(blob, `imagetexter.${getDateFormatted()}.png`)
             })
