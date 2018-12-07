@@ -17,10 +17,15 @@ export default class GuiControl {
             this.imageChange = (fileName) => {
                 sketch.setImage(`./assets/images/${fileName}`)
             }
-            this.gui['__controllers'][7].onChange(this.imageChange) // TODO: ugh, this can't be right
+            // TODO: ugh, this can't be good
+            // but I've now seen it in several places as the accepted solution (BAH!)
+            // or by searching for the correct name
+            // which is somewhat better
+            this.gui['__controllers'][8].onChange(this.imageChange)
         }
 
         // TODO: also need to re-implement open-in-tab
+        // which may not work, since there's a hard-limit for URL length in chrome
         const saveSketch = () => {
             const getDateFormatted = function () {
                 var d = new Date()
@@ -90,6 +95,7 @@ export default class GuiControl {
             drawMode: 1,
             textsize: 10,
             autoPaintMode: false,
+            randomSizeMode: true,
             font: fontList[0],
             image: imageList[0]
         }
@@ -106,6 +112,7 @@ export default class GuiControl {
         gui.add(params, 'clear')
         gui.add(params, 'textsize').min(4).max(64).step(1).listen()
         gui.add(params, 'autoPaintMode').listen()
+        gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()
         gui.add(params, 'image', imageList).onChange(imageChange)
         this.params = params

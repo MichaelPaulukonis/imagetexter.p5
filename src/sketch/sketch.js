@@ -18,8 +18,10 @@ import Undo from './undo.js' // TODO: implement
 export default function Sketch (p5, textManager, params, guiControl) {
 
   params.textsize = params.textsize || 10;
-  var blackfield = '#000000';
-  var whitefield = '#FFFFFF';
+  params.randomSizeMode = params.randomSizeMode || true;
+
+  const blackfield = '#000000';
+  const whitefield = '#FFFFFF';
   params.blackNotWhite = false;
   var img;
 
@@ -84,7 +86,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   function paintWordAtPoint (locX, locY) {
-    if (randomSizeMode) {
+    if (params.randomSizeMode) {
       spatterWordAtPoint(locX, locY);
     }
     else {
@@ -94,9 +96,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   function paintStaticSizedWordAtPoint (locX, locY) {
     // absolute positioning
-    var offX = getJitter(), offY = getJitter();
-    setFill(locX + offX, locY + offY);
-    p5.text(textManager.getWord(), locX + offX, locY + offY);
+    const x = locX + getJitter()
+    const y =locY + getJitter()
+    setFill(x, y);
+    p5.text(textManager.getWord(), x, y);
   }
 
   // paint words AROUND the point in different sizes
@@ -280,10 +283,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     paintWordAtPoint(locX, locY)
   }
 
-
-  let randomSizeMode = true;
   function toggleRandomSizeMode () {
-    randomSizeMode = !randomSizeMode;
+    params.randomSizeMode = !params.randomSizeMode;
   }
 
   // const saveSketch = () => {
