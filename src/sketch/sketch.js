@@ -24,8 +24,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   const whitefield = '#FFFFFF';
   params.blackNotWhite = false;
   var img;
-  var layer1 // drawing layer
-  var layer2 // image reference layer (for superimposition - manual comparison reference, not saved)
+  var drawingLayer // drawing layer
+  // var layer2 // image reference layer (for superimposition - manual comparison reference, not saved)
   let canvasSize = { x: 700, y: 700 }
 
   const textInputBox = document.getElementById('bodycopy')
@@ -44,8 +44,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
-    layer1 = p5.createGraphics(canvasSize.x, canvasSize.y)
-    layer2 = p5.createGraphics(canvasSize.x, canvasSize.y)
+    drawingLayer = p5.createGraphics(canvasSize.x, canvasSize.y)
+    // layer2 = p5.createGraphics(canvasSize.x, canvasSize.y)
 
     setBodyCopy(textManager.getText())
     const textButton = document.getElementById('applytext')
@@ -53,31 +53,31 @@ export default function Sketch (p5, textManager, params, guiControl) {
       textManager.setText(getBodyCopy())
     })
     renderSetup(p5)
-    renderSetup(layer1)
-    renderSetup(layer2)
+    renderSetup(drawingLayer)
+    // renderSetup(layer2)
     p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background var.
     guiControl.setupGui(this)
     parseImageSelection(4); // TODO: pick at random?
   }
 
-  const renderSetup = (r = p5) => {
+  const renderSetup = (r) => {
     clearCanvas(r);
     r.textSize(params.textsize);
     r.textAlign(p5.CENTER, p5.CENTER);
+    r.textFont(params.font)
   }
 
   p5.draw = () => {
-    layer1.textFont(params.font)
     // if autopaint AND the image has been imageLoaded....
     if (params.autoPaintGrid && imageLoaded) {
-      paintGrid(layer1)
+      paintGrid(drawingLayer)
       params.autoPaintGrid = false
       console.log('painted!')
       return
     }
     if (params.autoSave && imageLoaded) {
-      saveSketch()
+      this.saveSketch()
       params.autoSave = false
       console.log('saved!')
     }
@@ -88,28 +88,39 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
 
     if (p5.mouseIsPressed && mouseInCanvas()) {
+      console.log(`x: ${p5.mouseX} y: ${p5.mouseY}`)
       paintWordAtPoint(p5.mouseX, p5.mouseY);
     }
   }
 
   const mouseInCanvas = () => {
-    return p5.mouseY > 0 && p5.mouseY < p5.height && p5.mouseX > 0 && p5.mouseX < p5.width
+    let mic = p5.mouseY > 0 && p5.mouseY < p5.height && p5.mouseX > 0 && p5.mouseX < p5.width
+    console.log(`in canvas: ${mic}`)
+    return mic
   }
 
   const renderLayers = () => {
-    p5.image(layer1, 0, 0)
-    p5.push()
-    p5.tint(255, 25)
-    p5.image(img,0,0)
-    p5.pop()
+    p5.image(drawingLayer, 0, 0)
+    if (params.showReference) {
+      p5.push()
+      p5.tint(255, params.referenceTransparency)
+      p5.image(img, 0, 0)
+      p5.pop()
+    }
   }
+  this.renderLayers = renderLayers
+
+  const renderTarget = () => {
+    p5.image(drawingLayer, 0, 0)
+  }
+  this.renderTarget = renderTarget
 
   function paintWordAtPoint (locX, locY) {
     if (params.randomSizeMode) {
       spatterWordAtPoint(locX, locY);
     }
     else {
-      layer1.textSize(params.textsize);
+      drawingLayer.textSize(params.textsize);
       paintStaticSizedWordAtPoint(locX, locY);
     }
   }
@@ -118,15 +129,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // absolute positioning
     const x = locX + getJitter()
     const y = locY + getJitter()
-    setFill(x, y, layer1);
-    layer1.text(textManager.getWord(), x, y);
-    // p5.image(layer1, 0, 0)
+    setFill(x, y, drawingLayer);
+    drawingLayer.text(textManager.getWord(), x, y);
     renderLayers()
   }
 
   // paint words AROUND the point in different sizes
   function spatterWordAtPoint (locX, locY) {
-    const r = layer1
+    const r = drawingLayer
     r.textSize(randomTextSize(params.textsize));
     paintStaticSizedWordAtPoint(locX, locY);
     r.textSize(params.textsize); // restore original size
@@ -149,7 +159,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     var step = 5;
     params.textsize = (params.textsize + step * direction);
     if (params.textsize < 1) params.textsize = step;
-    layer1.textSize(params.textsize);
+    drawingLayer.textSize(params.textsize);
   }
 
   var jitRange = 20;
@@ -163,17 +173,18 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (jitRange < 1) jitRange = 1;
   }
 
+  // TODO: there are discontinuties
   const imageReady = () => {
     if (img.height < p5.height) {
       img.resize(0, p5.height)
     } else {
       img.resize(p5.width, 0)
       p5.resizeCanvas(p5.width, img.height)
-      layer1.resizeCanvas(p5.width, img.height)
-      layer2.resizeCanvas(p5.width, img.height)
+      drawingLayer.resizeCanvas(p5.width, img.height)
+      // layer2.resizeCanvas(p5.width, img.height)
     }
     img.loadPixels()
-    clearCanvas(layer1)
+    clearCanvas(drawingLayer)
     imageLoadedDisplay.removeClass('hide')
     imageLoaded = true
   }
@@ -216,9 +227,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.setImage = setImage
 
   // print a grid of characters from upper-left to lower-right
-  // something about painting the grid causes the saving to fail
-  // not with a code error or exception, but some kind of "network error"
-  function paintGrid (r = p5) {
+  // TODO: not honoring text size (probably a layers thing)
+  const paintGrid = (r = drawingLayer) => {
     r.textAlign(p5.LEFT, p5.BOTTOM);
     var nextX = 0
     var nextY = 0
@@ -240,7 +250,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       }
     }
     r.textAlign(p5.CENTER, p5.CENTER);
-    renderLayers()
+    renderLayers(params)
   }
 
 
@@ -251,7 +261,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (curPaintMode < 0) curPaintMode = paintModes - 1;
   }
 
-  function setFill (locX, locY, renderer = p5) {
+  function setFill (locX, locY, renderer) {
 
     if (locX < 0) locX = 0;
     if (locX >= p5.width) locX = p5.width - 1;
@@ -338,12 +348,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
       }
     }
     else if (keyCode == p5.BACKSPACE || keyCode == p5.DELETE) {
-      clearCanvas(layer1);
+      clearCanvas(drawingLayer);
       renderLayers()
     }
   }
 
-  function keyHandler (char) {
+  let keyHandler = (char) => {
     switch (char) {
 
       case '1':
@@ -371,12 +381,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
         break;
 
       case 'c':
-        clearCanvas(layer1);
+        clearCanvas(drawingLayer);
         renderLayers()
         break;
 
       case 'g':
-        paintGrid();
+        paintGrid(drawingLayer);
+        renderLayers()
         break;
 
       case 'm':
@@ -391,13 +402,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
         break;
 
       case 's':
-        saveSketch();
+        this.saveSketch();
         break;
 
       case 'x':
       case 'X':
         params.blackNotWhite = !params.blackNotWhite;
-        setFill(p5.mouseX, p5.mouseY);
+        setFill(p5.mouseX, p5.mouseY, drawingLayer);
         break;
     }
   }

@@ -11,8 +11,8 @@ export default class GuiControl {
             }
             setfocus()
             this.params.clear = sketch.clearCanvas
-            sketch.saveSketch = saveSketch
-            this.params.save = sketch.saveSketch
+            this.params.save = saveSketch(sketch, cnvs)
+            sketch.saveSketch = this.params.save
 
             this.imageChange = (fileName) => {
                 sketch.setImage(`./assets/images/${fileName}`)
@@ -26,7 +26,8 @@ export default class GuiControl {
 
         // TODO: also need to re-implement open-in-tab
         // which may not work, since there's a hard-limit for URL length in chrome
-        const saveSketch = () => {
+        // needs reerence to sketch, to render layer1 only
+        const saveSketch = (sketch, cnvs) => () => {
             const getDateFormatted = function () {
                 var d = new Date()
                 var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
@@ -38,9 +39,11 @@ export default class GuiControl {
                 return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
             }
             // TODO: WE WANT TO GET LAYER 1 ACTUALLY UGH UGH UGH
+            sketch.renderTarget()
             cnvs.toBlob((blob) => {
                 saveAs(blob, `imagetexter.${getDateFormatted()}.png`)
             })
+            sketch.renderLayers()
         }
 
         var setfocus = function () {
@@ -98,7 +101,9 @@ export default class GuiControl {
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
-            image: imageList[0]
+            image: imageList[0],
+            showReference: true,
+            referenceTransparency: 25,
         }
 
         this.imageChange = () => { }
@@ -116,6 +121,8 @@ export default class GuiControl {
         gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()
         gui.add(params, 'image', imageList).onChange(imageChange)
+        gui.add(params, 'showReference')
+        gui.add(params, 'referenceTransparency').min(0).max(100).step(1).listen()
         this.params = params
         this.gui = gui
     }
