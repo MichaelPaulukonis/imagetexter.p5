@@ -11,22 +11,27 @@ export default class GuiControl {
             }
             setfocus()
             this.params.clear = sketch.clearCanvas
-            sketch.saveSketch = saveSketch
-            this.params.save = sketch.saveSketch
+            this.params.save = saveSketch(sketch, cnvs)
+            sketch.saveSketch = this.params.save
 
             this.imageChange = (fileName) => {
                 sketch.setImage(`./assets/images/${fileName}`)
             }
-            // TODO: ugh, this can't be good
-            // but I've now seen it in several places as the accepted solution (BAH!)
-            // or by searching for the correct name
-            // which is somewhat better
-            this.gui['__controllers'][8].onChange(this.imageChange)
+
+            let ic = this.gui['__controllers'].filter(e => e.property === 'image')
+            if (ic && ic[0] && ic[0].onChange) ic[0].onChange(this.imageChange)
+
+            let src = this.gui['__controllers'].filter(e => e.property === 'showReference')
+            if (src && src[0] && src[0].onChange) src[0].onChange(sketch.renderLayers)
+
+            let rtc = this.gui['__controllers'].filter(e => e.property === 'referenceTransparency')
+            if (rtc && rtc[0] && rtc[0].onChange) rtc[0].onChange(sketch.renderLayers)
         }
 
         // TODO: also need to re-implement open-in-tab
         // which may not work, since there's a hard-limit for URL length in chrome
-        const saveSketch = () => {
+        // needs reerence to sketch, to render layer1 only
+        const saveSketch = (sketch, cnvs) => () => {
             const getDateFormatted = function () {
                 var d = new Date()
                 var df = `${d.getFullYear()}${pad((d.getMonth() + 1), 2)}${pad(d.getDate(), 2)}.${pad(d.getHours(), 2)}${pad(d.getMinutes(), 2)}${pad(d.getSeconds(), 2)}`
@@ -37,9 +42,12 @@ export default class GuiControl {
                 nbr = nbr + ''
                 return nbr.length >= width ? nbr : new Array(width - nbr.length + 1).join(fill) + nbr
             }
+            // TODO: WE WANT TO GET LAYER 1 ACTUALLY UGH UGH UGH
+            sketch.renderTarget()
             cnvs.toBlob((blob) => {
                 saveAs(blob, `imagetexter.${getDateFormatted()}.png`)
             })
+            sketch.renderLayers()
         }
 
         var setfocus = function () {
@@ -97,7 +105,9 @@ export default class GuiControl {
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
-            image: imageList[0]
+            image: imageList[0],
+            showReference: true,
+            referenceTransparency: 25,
         }
 
         this.imageChange = () => { }
@@ -115,6 +125,8 @@ export default class GuiControl {
         gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()
         gui.add(params, 'image', imageList).onChange(imageChange)
+        gui.add(params, 'showReference')
+        gui.add(params, 'referenceTransparency').min(0).max(100).step(1).listen()
         this.params = params
         this.gui = gui
     }
