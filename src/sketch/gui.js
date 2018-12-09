@@ -17,11 +17,16 @@ export default class GuiControl {
             this.imageChange = (fileName) => {
                 sketch.setImage(`./assets/images/${fileName}`)
             }
-            // TODO: ugh, this can't be good
-            // but I've now seen it in several places as the accepted solution (BAH!)
-            // or by searching for the correct name
-            // which is somewhat better
-            this.gui['__controllers'][8].onChange(this.imageChange)
+
+            let ic = this.gui['__controllers'].filter(e => e.property === 'image')
+            if (ic && ic[0] && ic[0].onChange) ic[0].onChange(this.imageChange)
+
+            let src = this.gui['__controllers'].filter(e => e.property === 'showReference')
+            if (src && src[0] && src[0].onChange) src[0].onChange(sketch.renderLayers)
+
+            let rtc = this.gui['__controllers'].filter(e => e.property === 'referenceTransparency')
+            if (rtc && rtc[0] && rtc[0].onChange) rtc[0].onChange(sketch.renderLayers)
+
         }
 
         // TODO: also need to re-implement open-in-tab

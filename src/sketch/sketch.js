@@ -62,6 +62,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderSetup = (r) => {
+    r.pixelDensity(1)
     clearCanvas(r);
     r.textSize(params.textsize);
     r.textAlign(p5.CENTER, p5.CENTER);
@@ -73,13 +74,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (params.autoPaintGrid && imageLoaded) {
       paintGrid(drawingLayer)
       params.autoPaintGrid = false
-      console.log('painted!')
-      return
     }
     if (params.autoSave && imageLoaded) {
       this.saveSketch()
       params.autoSave = false
-      console.log('saved!')
     }
 
     if (params.autoPaintMode) {
@@ -88,22 +86,30 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
 
     if (p5.mouseIsPressed && mouseInCanvas()) {
-      console.log(`x: ${p5.mouseX} y: ${p5.mouseY}`)
       paintWordAtPoint(p5.mouseX, p5.mouseY);
     }
   }
 
   const mouseInCanvas = () => {
     let mic = p5.mouseY > 0 && p5.mouseY < p5.height && p5.mouseX > 0 && p5.mouseX < p5.width
-    console.log(`in canvas: ${mic}`)
     return mic
   }
 
+  const logSizes = (msg) => {
+    if (msg) console.log(msg)
+    console.log(`canvas: ${p5.width},${p5.height}`)
+    console.log(`drawing: ${drawingLayer.width},${drawingLayer.height}`)
+    console.log(`image: ${img.width},${img.height}`)
+  }
+
   const renderLayers = () => {
+    if (p5.width !== drawingLayer.width || p5.height !== drawingLayer.height) {
+      logSizes('\\nnDISCONTINUITY!!!\n')
+    }
     p5.image(drawingLayer, 0, 0)
     if (params.showReference) {
       p5.push()
-      p5.tint(255, params.referenceTransparency)
+      p5.tint(255, (params.referenceTransparency / 100 * 255))
       p5.image(img, 0, 0)
       p5.pop()
     }
@@ -174,19 +180,26 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   // TODO: there are discontinuties
+  // canvas:  700,941
+  // drawing: 700,700
+  // image:   700,941
   const imageReady = () => {
+    logSizes('imageReady enter')
     if (img.height < p5.height) {
       img.resize(0, p5.height)
+      console.log(`image branch)`)
     } else {
       img.resize(p5.width, 0)
       p5.resizeCanvas(p5.width, img.height)
-      drawingLayer.resizeCanvas(p5.width, img.height)
-      // layer2.resizeCanvas(p5.width, img.height)
+      drawingLayer = p5.createGraphics(p5.width, p5.height)
+      console.log(`all branch)`)
     }
     img.loadPixels()
     clearCanvas(drawingLayer)
     imageLoadedDisplay.removeClass('hide')
     imageLoaded = true
+    logSizes('imageReady exit')
+    renderLayers()
   }
 
   // select one of the 4 images
