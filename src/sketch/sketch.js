@@ -95,17 +95,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return mic
   }
 
-  const logSizes = (msg) => {
-    if (msg) console.log(msg)
-    console.log(`canvas: ${p5.width},${p5.height}`)
-    console.log(`drawing: ${drawingLayer.width},${drawingLayer.height}`)
-    console.log(`image: ${img.width},${img.height}`)
-  }
-
   const renderLayers = () => {
-    if (p5.width !== drawingLayer.width || p5.height !== drawingLayer.height) {
-      logSizes('\\nnDISCONTINUITY!!!\n')
-    }
     p5.image(drawingLayer, 0, 0)
     if (params.showReference) {
       p5.push()
@@ -156,8 +146,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const clearCanvas = (r = p5) => {
-    var field = params.blackNotWhite ? whitefield : blackfield;
-    r.background(field);
+    var field = params.blackNotWhite ? whitefield : blackfield
+    r.background(field)
   }
   this.clearCanvas = clearCanvas
 
@@ -179,26 +169,18 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (jitRange < 1) jitRange = 1;
   }
 
-  // TODO: there are discontinuties
-  // canvas:  700,941
-  // drawing: 700,700
-  // image:   700,941
   const imageReady = () => {
-    logSizes('imageReady enter')
     if (img.height < p5.height) {
       img.resize(0, p5.height)
-      console.log(`image branch)`)
     } else {
       img.resize(p5.width, 0)
       p5.resizeCanvas(p5.width, img.height)
       drawingLayer = p5.createGraphics(p5.width, p5.height)
-      console.log(`all branch)`)
     }
     img.loadPixels()
     clearCanvas(drawingLayer)
     imageLoadedDisplay.removeClass('hide')
     imageLoaded = true
-    logSizes('imageReady exit')
     renderLayers()
   }
 
@@ -299,7 +281,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
         // This is adapted from the get() source - but is faster, since loadPixels()
         // is not performed on each iteration
         var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data;
-        renderer.fill(pix[0], pix[1], pix[2], pix[3]);
+        renderer.fill(pix[0], pix[1], pix[2]);
         break;
 
       case 1:
