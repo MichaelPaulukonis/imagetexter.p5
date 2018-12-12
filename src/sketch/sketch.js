@@ -58,7 +58,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background var.
     guiControl.setupGui(this)
-    parseImageSelection(4); // TODO: pick at random?
+    parseImageSelection(); // TODO: pick at random?
   }
 
   const renderSetup = (r) => {
@@ -96,7 +96,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderLayers = () => {
-    p5.image(drawingLayer, 0, 0)
+    renderTarget()
     if (params.showReference) {
       p5.push()
       p5.tint(255, (params.referenceTransparency / 100 * 255))
@@ -169,6 +169,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (jitRange < 1) jitRange = 1;
   }
 
+  const setFont = (font) => {
+    drawingLayer.textFont(font)
+  }
+  this.setFont = setFont
+
   const imageReady = () => {
     if (img.height < p5.height) {
       img.resize(0, p5.height)
@@ -187,29 +192,9 @@ export default function Sketch (p5, textManager, params, guiControl) {
   // select one of the 4 images
   // this BEGS for a refactoring
   /* @pjs preload="001.jpg,002.jpg,003.jpg,004.jpg"; */
-  function parseImageSelection (image) {
-
-    switch (image) {
-      case 1:
-        setImage("./assets/001.jpg")
-        break;
-
-      case 2:
-        setImage("./assets/002.jpg")
-        break;
-
-      case 3:
-        setImage("./assets/003.jpg")
-        break;
-
-      case 4:
-        setImage("./assets/004.jpg")
-        break;
-
-      case 5:
+  function parseImageSelection () {
         let fileName = getRandom(params.images)
         setImage(`./assets/images/${fileName}`)
-    }
   }
 
   const setImage = (filename) => {
@@ -224,6 +209,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   // print a grid of characters from upper-left to lower-right
   // TODO: not honoring text size (probably a layers thing)
   const paintGrid = (r = drawingLayer) => {
+    r.textSize(params.textsize)
     r.textAlign(p5.LEFT, p5.BOTTOM);
     var nextX = 0
     var nextY = 0
@@ -351,24 +337,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   let keyHandler = (char) => {
     switch (char) {
 
-      case '1':
-        parseImageSelection(1);
-        break;
-
-      case '2':
-        parseImageSelection(2);
-        break;
-
-      case '3':
-        parseImageSelection(3);
-        break;
-
-      case '4':
-        parseImageSelection(4);
-        break;
-
       case '5':
-        parseImageSelection(5);
+        parseImageSelection();
         break;
 
       case 'a':

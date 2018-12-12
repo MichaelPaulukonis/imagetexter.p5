@@ -26,6 +26,9 @@ export default class GuiControl {
 
             let rtc = this.gui['__controllers'].filter(e => e.property === 'referenceTransparency')
             if (rtc && rtc[0] && rtc[0].onChange) rtc[0].onChange(sketch.renderLayers)
+
+            let ftc = this.gui['__controllers'].filter(e => e.property === 'font')
+            if (ftc && ftc[0] && ftc[0].onChange) ftc[0].onChange(sketch.setFont)
         }
 
         // TODO: also need to re-implement open-in-tab
@@ -105,6 +108,7 @@ export default class GuiControl {
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
+            images: imageList,
             image: imageList[0],
             showReference: true,
             referenceTransparency: 25,
