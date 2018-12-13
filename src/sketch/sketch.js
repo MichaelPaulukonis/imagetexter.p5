@@ -44,21 +44,17 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
-    drawingLayer = p5.createGraphics(canvasSize.x, canvasSize.y)
-    // layer2 = p5.createGraphics(canvasSize.x, canvasSize.y)
+    drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
 
     setBodyCopy(textManager.getText())
     const textButton = document.getElementById('applytext')
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
     })
-    renderSetup(p5)
-    renderSetup(drawingLayer)
-    // renderSetup(layer2)
     p5.frameRate(60); // change if paint events seem to be too rapid
-    curPaintMode = params.paintMode || 2; // paint with background var.
+    curPaintMode = params.paintMode || 2; // paint with background
     guiControl.setupGui(this)
-    parseImageSelection(); // TODO: pick at random?
+    parseImageSelection();
   }
 
   const renderSetup = (r) => {
@@ -70,7 +66,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   p5.draw = () => {
-    // if autopaint AND the image has been imageLoaded....
     if (params.autoPaintGrid && imageLoaded) {
       paintGrid(drawingLayer)
       params.autoPaintGrid = false
@@ -169,18 +164,20 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (jitRange < 1) jitRange = 1;
   }
 
-  const setFont = (font) => {
-    drawingLayer.textFont(font)
+  const setFont = (font, layer = drawingLayer) => {
+    layer.textFont(font)
   }
   this.setFont = setFont
 
   const imageReady = () => {
+    renderSetup(p5)
+    renderSetup(drawingLayer)
     if (img.height < p5.height) {
       img.resize(0, p5.height)
     } else {
       img.resize(p5.width, 0)
       p5.resizeCanvas(p5.width, img.height)
-      drawingLayer = p5.createGraphics(p5.width, p5.height)
+      drawingLayer = initializeDrawingLayer(p5.width, p5.height)
     }
     img.loadPixels()
     clearCanvas(drawingLayer)
@@ -189,11 +186,16 @@ export default function Sketch (p5, textManager, params, guiControl) {
     renderLayers()
   }
 
-  // select one of the 4 images
-  // this BEGS for a refactoring
-  /* @pjs preload="001.jpg,002.jpg,003.jpg,004.jpg"; */
+  const initializeDrawingLayer = (w, h) => {
+    let layer = p5.createGraphics(w, h)
+    setFont(params.font, layer)
+    return layer
+  }
+
   function parseImageSelection () {
         let fileName = getRandom(params.images)
+        // seriously? this is not part of sketch - it's external knowledge
+        // ALSO NOT PART OF THE GUI - it should be provided
         setImage(`./assets/images/${fileName}`)
   }
 
