@@ -29,7 +29,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
   let canvasSize = { x: 700, y: 700 }
 
   const textInputBox = document.getElementById('bodycopy')
-  const imageLoadedDisplay = p5.select('#imageLoaded')
   let imageLoaded = false
 
   function getBodyCopy () {
@@ -51,7 +50,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
     })
-    p5.frameRate(60); // change if paint events seem to be too rapid
     curPaintMode = params.paintMode || 2; // paint with background
     guiControl.setupGui(this)
     parseImageSelection();
@@ -91,13 +89,15 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderLayers = () => {
-    renderTarget()
+    clearCanvas(p5)
+    p5.blendMode(p5.LIGHTEST)
     if (params.showReference) {
       p5.push()
       p5.tint(255, (params.referenceTransparency / 100 * 255))
       p5.image(img, 0, 0)
       p5.pop()
     }
+    renderTarget()
   }
   this.renderLayers = renderLayers
 
@@ -121,6 +121,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const x = locX + getJitter()
     const y = locY + getJitter()
     setFill(x, y, drawingLayer);
+    // shouldn't this be CENTERED ?????
     drawingLayer.text(textManager.getWord(), x, y);
     renderLayers()
   }
@@ -141,13 +142,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const clearCanvas = (r = p5) => {
+    r.blendMode(p5.NORMAL)
     var field = params.blackNotWhite ? whitefield : blackfield
     r.background(field)
   }
   this.clearCanvas = clearCanvas
 
   function changeTextsize (direction) {
-    var step = 5;
+    var step = 2;
     params.textsize = (params.textsize + step * direction);
     if (params.textsize < 1) params.textsize = step;
     drawingLayer.textSize(params.textsize);
@@ -181,7 +183,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
     img.loadPixels()
     clearCanvas(drawingLayer)
-    imageLoadedDisplay.removeClass('hide')
     imageLoaded = true
     renderLayers()
   }
@@ -193,16 +194,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   function parseImageSelection () {
-        let fileName = getRandom(params.images)
-        // seriously? this is not part of sketch - it's external knowledge
-        // ALSO NOT PART OF THE GUI - it should be provided
-        setImage(`./assets/images/${fileName}`)
+    params.image = getRandom(params.images)
+    // seriously? this is not part of sketch - it's external knowledge
+    // ALSO NOT PART OF THE GUI - it should be provided
+    setImage(`./assets/images/${params.image}`)
   }
 
   const setImage = (filename) => {
-    if (imageLoadedDisplay.class() !== 'hide') {
-      imageLoadedDisplay.addClass('hide')
-    }
     imageLoaded = false
     img = p5.loadImage(filename, imageReady)
   }
@@ -314,7 +312,9 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const keyPresser = (keyCode) => {
+    let handled = false
     if (keyCode == p5.UP_ARROW || keyCode == p5.DOWN_ARROW) {
+      handled = true
       if (keyCode == p5.UP_ARROW) {
         changeTextsize(1);
       }
@@ -323,6 +323,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       }
     }
     else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
+      handled = true
       if (keyCode == p5.RIGHT_ARROW) {
         setJitRange(1);
       }
@@ -331,9 +332,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
       }
     }
     else if (keyCode == p5.BACKSPACE || keyCode == p5.DELETE) {
+      handled = true
       clearCanvas(drawingLayer);
       renderLayers()
     }
+    return handled
   }
 
   let keyHandler = (char) => {
