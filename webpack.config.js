@@ -4,6 +4,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
+const loader = require('./loadImages.js')
+const images = loader('./assets/images')
+console.log(JSON.stringify(images))
+
 module.exports = {
   entry: {
     bundle: path.resolve(__dirname, 'src', 'index.js')
@@ -13,7 +17,7 @@ module.exports = {
     port: 8080,
     open: true,
     openPage: '',
-    stats: 'errors-only',
+    stats: 'normal',
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -22,19 +26,23 @@ module.exports = {
   resolve: {
     extensions: [
       '.js'
-    ]
+    ],
+    // alias: {
+    //   Assets: path.resolve(__dirname, 'assets/')
+    // }
   },
   module: {
-    loaders: [
-      {
-        loader: 'babel-loader',
-        test: /\.js$/
-      }
-    ],
+    // loaders: [
+    //   {
+    //     loader: 'babel-loader',
+    //     test: /\.js$/
+    //   }
+    // ],
   },
   plugins: [
     new webpack.DefinePlugin({
-      VERSION: JSON.stringify(require('./package.json').version)
+      VERSION: JSON.stringify(require('./package.json').version),
+      IMAGES: JSON.stringify(images)
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src', 'index.html'),
@@ -46,15 +54,20 @@ module.exports = {
         to: path.resolve(__dirname, 'dist', 'assets'),
       }
     ]),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: function (module) {
-        return module.context && module.context.indexOf('node_modules') !== -1;
-      },
-    }),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'manifest'
-    }),
+    // new webpack.optimize.CommonsChunkPlugin({
+    //   name: 'vendor',
+    //   minChunks: function (module) {
+    //     return module.context && module.context.indexOf('node_modules') !== -1;
+    //   },
+    // }),
+    // new webpack.optimize.CommonsChunkPlugin({
+    //   name: 'manifest'
+    // }),
   ],
-  devtool: 'source-map'
+  devtool: 'source-map',
+  optimization: {
+    splitChunks: {
+      chunks: 'all'
+    }
+  }
 };

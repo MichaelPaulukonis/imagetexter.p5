@@ -2,7 +2,7 @@ import * as dat from './dat.gui.js'
 import saveAs from 'file-saver'
 
 export default class GuiControl {
-    constructor() {
+    constructor(imageList) {
         var cnvs
         this.setupGui = (sketch) => {
             cnvs = document.getElementsByTagName('canvas')
@@ -26,6 +26,9 @@ export default class GuiControl {
 
             let rtc = this.gui['__controllers'].filter(e => e.property === 'referenceTransparency')
             if (rtc && rtc[0] && rtc[0].onChange) rtc[0].onChange(sketch.renderLayers)
+
+            let ftc = this.gui['__controllers'].filter(e => e.property === 'font')
+            if (ftc && ftc[0] && ftc[0].onChange) ftc[0].onChange(sketch.setFont)
         }
 
         // TODO: also need to re-implement open-in-tab
@@ -66,34 +69,7 @@ export default class GuiControl {
         if (fc) fc.onclick = setfocus
 
         const fontList = ['Georgia', 'Helvetica', 'Courier New']
-        const imageList = [
-            'A11288.jpg',
-            'A11309.jpg',
-            'A14854.jpg',
-            'A15225.jpg',
-            'A15324.jpg',
-            'A15528.jpg',
-            'A17014.jpg',
-            'A17037.jpg',
-            'A17070.jpg',
-            'A17275.jpg',
-            'A18640.jpg',
-            'A18663.jpg',
-            'A21721.jpg',
-            'A23208.jpg',
-            'A26576.jpg',
-            'A30448.jpg',
-            'A30827.jpg',
-            'A35075.jpg',
-            'A38696.jpg',
-            'A40874.jpg',
-            'A43727.jpg',
-            'accordionist.jpg',
-            'head-of-a-woman.jpg',
-            'large-bather.jpg',
-            'painter-and-model.jpg',
-            'self-portrait.jpg'
-        ]
+        
         var paramsInitial = {
             name: 'image.texter',
             open: this.openCanvasInNewTab,
@@ -105,6 +81,7 @@ export default class GuiControl {
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
+            images: imageList,
             image: imageList[0],
             showReference: true,
             referenceTransparency: 25,
@@ -124,7 +101,7 @@ export default class GuiControl {
         gui.add(params, 'autoPaintMode').listen()
         gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()
-        gui.add(params, 'image', imageList).onChange(imageChange)
+        gui.add(params, 'image', imageList).onChange(imageChange).listen()
         gui.add(params, 'showReference')
         gui.add(params, 'referenceTransparency').min(0).max(100).step(1).listen()
         this.params = params
