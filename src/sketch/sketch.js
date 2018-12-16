@@ -20,6 +20,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   params.textsize = params.textsize || 10;
   params.randomSizeMode = params.randomSizeMode || true;
 
+  let bypassRender = false
+
   const blackfield = '#000000';
   const whitefield = '#FFFFFF';
   params.blackNotWhite = false;
@@ -57,7 +59,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   const renderSetup = (r) => {
     r.pixelDensity(1)
-    clearCanvas(r);
+    clearLayer(r);
     r.textSize(params.textsize);
     r.textAlign(p5.CENTER, p5.CENTER);
     r.textFont(params.font)
@@ -74,7 +76,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
 
     if (params.autoPaintMode) {
-      autoPaintRegion(0, 0, p5.width, p5.height);
+      paintWordInRegion(0, 0, p5.width, p5.height);
       return;
     }
 
@@ -89,8 +91,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderLayers = () => {
-    clearCanvas(p5)
-    p5.blendMode(p5.LIGHTEST)
+    if (bypassRender) return
+    clearLayer(p5)
+    // once the param changes, we should NOT use the changed version
+    // UNTIL the drawing has been cleared
+    // not sure of the cleanest way to do it
+    // not a common thing, but.... UGH
+    p5.blendMode(params.blackNotWhite ? p5.DARKEST : p5.LIGHTEST)
     if (params.showReference) {
       p5.push()
       p5.tint(255, (params.referenceTransparency / 100 * 255))
@@ -106,17 +113,34 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
   this.renderTarget = renderTarget
 
+  const clearLayer = (r = p5) => {
+    r.blendMode(p5.NORMAL)
+    var field = params.blackNotWhite ? whitefield : blackfield
+    r.background(field)
+  }
+  this.clearLayer = clearLayer
+
+  const clearDrawing = () => {
+    // TODO: everywhere, this appears to be inverted
+    // or it is named wrong. It's what the background should be
+    // TODO: also figure out how to make background ALPHA which would get rid of the whole need for blending
+    clearLayer(drawingLayer)
+    p5.blendMode(params.blackNotWhite ? p5.DARKEST : p5.LIGHTEST)
+    renderLayers()
+  }
+  this.clearDrawing = clearDrawing
+
   function paintWordAtPoint (locX, locY) {
     if (params.randomSizeMode) {
       spatterWordAtPoint(locX, locY);
     }
     else {
       drawingLayer.textSize(params.textsize);
-      paintStaticSizedWordAtPoint(locX, locY);
+      paintStaticSizedWordNearPoint(locX, locY);
     }
   }
 
-  function paintStaticSizedWordAtPoint (locX, locY) {
+  function paintStaticSizedWordNearPoint (locX, locY) {
     // absolute positioning
     const x = locX + getJitter()
     const y = locY + getJitter()
@@ -130,7 +154,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   function spatterWordAtPoint (locX, locY) {
     const r = drawingLayer
     r.textSize(randomTextSize(params.textsize));
-    paintStaticSizedWordAtPoint(locX, locY);
+    paintStaticSizedWordNearPoint(locX, locY);
     r.textSize(params.textsize); // restore original size
   }
 
@@ -140,13 +164,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (newsize < 2) newsize = 2;
     return newsize;
   }
-
-  const clearCanvas = (r = p5) => {
-    r.blendMode(p5.NORMAL)
-    var field = params.blackNotWhite ? whitefield : blackfield
-    r.background(field)
-  }
-  this.clearCanvas = clearCanvas
 
   function changeTextsize (direction) {
     var step = 2;
@@ -182,7 +199,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       drawingLayer = initializeDrawingLayer(p5.width, p5.height)
     }
     img.loadPixels()
-    clearCanvas(drawingLayer)
+    clearLayer(drawingLayer)
     imageLoaded = true
     renderLayers()
   }
@@ -213,11 +230,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     r.textAlign(p5.LEFT, p5.BOTTOM);
     var nextX = 0
     var nextY = 0
-    // TODO: make this somewhat tweakable
-    // same too the space between
-    // var yOffset = (p5.textAscent() + p5.textDescent());
-    var yOffset = r.textAscent() //+ p5.textDescent());
-
+    var yOffset = r.textAscent() + params.heightOffset
+    yOffset = (yOffset > 2) ? yOffset : 3
     var w = textManager.getchar();
     nextY = nextY + yOffset;
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
@@ -225,6 +239,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       r.text(w, nextX, nextY);
       nextX = nextX + r.textWidth(w);
       w = textManager.getchar();
+      // this can leave a gap on the right - there should be _some_ overlap
       if (nextX + r.textWidth(w) > p5.width) {
         nextX = 0;
         nextY = nextY + yOffset;
@@ -289,8 +304,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return arr[getRandomInt(0, arr.length - 1)]
   }
 
-  function autoPaintRegion (minX, minY, maxX, maxY) {
-    var locX = getRandomInt(minX, maxX)
+  const paintWordInRegion = (minX, minY, maxX, maxY) => {
+    let locX = getRandomInt(minX, maxX)
     let locY = getRandomInt(minY, maxY)
     paintWordAtPoint(locX, locY)
   }
@@ -313,34 +328,35 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   const keyPresser = (keyCode) => {
     let handled = false
-    if (keyCode == p5.UP_ARROW || keyCode == p5.DOWN_ARROW) {
+    if (keyCode === p5.UP_ARROW || keyCode === p5.DOWN_ARROW) {
       handled = true
-      if (keyCode == p5.UP_ARROW) {
-        changeTextsize(1);
-      }
-      else {
-        changeTextsize(-1);
-      }
+      changeTextsize(keyCode === p5.UP_ARROW ? 1 : -1)
     }
     else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
       handled = true
-      if (keyCode == p5.RIGHT_ARROW) {
-        setJitRange(1);
-      }
-      else {
-        setJitRange(-1);
-      }
+      setJitRange(eyCode === p5.RIGHT_ARROW ? 1 : -1)
     }
-    else if (keyCode == p5.BACKSPACE || keyCode == p5.DELETE) {
+    else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
       handled = true
-      clearCanvas(drawingLayer);
-      renderLayers()
+      clearDrawing()
     }
     return handled
   }
 
   let keyHandler = (char) => {
     switch (char) {
+
+      case '1':
+        macro1()
+        break;
+
+      case '2':
+        macro2()
+        break;
+
+      case '3':
+        macro3()
+        break;
 
       case '5':
         parseImageSelection();
@@ -351,7 +367,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
         break;
 
       case 'c':
-        clearCanvas(drawingLayer);
+        clearLayer(drawingLayer);
         renderLayers()
         break;
 
@@ -383,7 +399,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
   }
 
-  function gotFile (file) {
+  const gotFile = (file) => {
     // If it's an image file
     if (file.type === 'image') {
       img = p5.loadImage(file.data, imageReady)
@@ -391,5 +407,24 @@ export default function Sketch (p5, textManager, params, guiControl) {
       p5.println('Not an image file!');
     }
   }
+
+  const macroWrapper = (f) => () => {
+    // the whole `bypassRender` global is awkward
+    // at least we've got the wrapper
+    bypassRender = true
+    f()
+    bypassRender = false
+    renderLayers()
+  }
+
+  const paintNwords = (n) => () => {
+    for (let i = 0; i < n; i++) {
+      paintWordInRegion(0, 0, p5.width, p5.height)
+    }
+  }
+
+  const macro1 = macroWrapper(paintNwords(50))
+  const macro2 = macroWrapper(paintNwords(1000))
+  const macro3 = macroWrapper(paintNwords(5000))
 
 }

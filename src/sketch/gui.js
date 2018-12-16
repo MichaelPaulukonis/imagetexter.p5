@@ -10,7 +10,7 @@ export default class GuiControl {
                 cnvs = cnvs[0]
             }
             setfocus()
-            this.params.clear = sketch.clearCanvas
+            this.params.clear = sketch.clearDrawing
             this.params.save = saveSketch(sketch, cnvs)
             sketch.saveSketch = this.params.save
 
@@ -69,7 +69,7 @@ export default class GuiControl {
         if (fc) fc.onclick = setfocus
 
         const fontList = ['Georgia', 'Helvetica', 'Courier New']
-        
+
         var paramsInitial = {
             name: 'image.texter',
             open: this.openCanvasInNewTab,
@@ -78,6 +78,7 @@ export default class GuiControl {
             clear: () => { },
             drawMode: 1,
             textsize: 10,
+            heightOffset: 0,
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
@@ -98,6 +99,7 @@ export default class GuiControl {
         gui.add(params, 'save')
         gui.add(params, 'clear')
         gui.add(params, 'textsize').min(4).max(64).step(1).listen()
+        gui.add(params, 'heightOffset').min(-20).max(20).step(1).listen()
         gui.add(params, 'autoPaintMode').listen()
         gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()
