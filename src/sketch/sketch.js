@@ -132,33 +132,31 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   function paintWordAtPoint (locX, locY) {
     if (params.randomSizeMode) {
-      spatterWordAtPoint(locX, locY);
+      paintRandomSizedWordNearPoint(locX, locY);
     }
     else {
       drawingLayer.textSize(params.textsize);
-      paintStaticSizedWordNearPoint(locX, locY);
+      paintWordNearPoint(locX, locY);
     }
   }
 
-  function paintStaticSizedWordNearPoint (locX, locY) {
+  function paintWordNearPoint (locX, locY) {
     // absolute positioning
     const x = locX + getJitter()
     const y = locY + getJitter()
-    setFill(x, y, drawingLayer);
-    // shouldn't this be CENTERED ?????
-    drawingLayer.text(textManager.getWord(), x, y);
+    setFill(x, y, drawingLayer)
+    drawingLayer.text(textManager.getWord(), x, y)
     renderLayers()
   }
 
-  // paint words AROUND the point in different sizes
-  function spatterWordAtPoint (locX, locY) {
-    const r = drawingLayer
-    r.textSize(randomTextSize(params.textsize));
-    paintStaticSizedWordNearPoint(locX, locY);
-    r.textSize(params.textsize); // restore original size
+  // paint word in a different size
+  function paintRandomSizedWordNearPoint (locX, locY) {
+    drawingLayer.textSize(randomSizeNear(params.textsize));
+    paintWordNearPoint(locX, locY);
+    drawingLayer.textSize(params.textsize); // restore original size
   }
 
-  function randomTextSize (prevSize) {
+  function randomSizeNear (prevSize) {
     var offset = getJitter();
     var newsize = offset + prevSize;
     if (newsize < 2) newsize = 2;
@@ -189,8 +187,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.setFont = setFont
 
   const imageReady = () => {
-    renderSetup(p5)
-    renderSetup(drawingLayer)
     if (img.height < p5.height) {
       img.resize(0, p5.height)
     } else {
@@ -198,6 +194,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
       p5.resizeCanvas(p5.width, img.height)
       drawingLayer = initializeDrawingLayer(p5.width, p5.height)
     }
+    renderSetup(p5)
+    renderSetup(drawingLayer)
     img.loadPixels()
     clearLayer(drawingLayer)
     imageLoaded = true
@@ -249,8 +247,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     renderLayers(params)
   }
 
-
-  var paintModes = 3;
+  var paintModes = 4;
   var curPaintMode = 0;
   function nextPaintMode (direction) {
     curPaintMode = (curPaintMode + direction) % paintModes;
@@ -289,6 +286,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
         // TODO: fill based on... mouseX/MouseY + offset?
         renderer.fill(locX, locY, 100);
         break;
+
+      case 3:
+        renderer.fill(blackfield)
+        break
     }
   }
 
@@ -334,7 +335,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
     else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
       handled = true
-      setJitRange(eyCode === p5.RIGHT_ARROW ? 1 : -1)
+      setJitRange(keyCode === p5.RIGHT_ARROW ? 1 : -1)
     }
     else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
       handled = true

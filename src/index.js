@@ -1,5 +1,6 @@
 // import P5 from 'p5'
-import P5 from 'p5/lib/p5.min'
+// import P5 from 'p5/lib/p5.min'
+import P5 from 'p5'
 import 'p5/lib/addons/p5.dom'
 import queryString from 'query-string'
 import TextManager from './sketch/TextManager'
