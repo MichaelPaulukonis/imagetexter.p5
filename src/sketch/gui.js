@@ -76,16 +76,26 @@ export default class GuiControl {
             // bind after defined in sketch (call setupGui)
             save: saveSketch,
             clear: () => { },
-            drawMode: 1,
+            paintMode: 2,
             textsize: 10,
+            jitRange: 20,
             heightOffset: 0,
             autoPaintMode: false,
             randomSizeMode: true,
             font: fontList[0],
+            rotate: false,
+            rotation: 0,
             images: imageList,
             image: imageList[0],
             showReference: true,
             referenceTransparency: 25,
+            paintModes: {
+                'black/white': 0,
+                'rainbowish': 1,
+                'from image': 2,
+                'black': 3,
+                'white': 4
+            }
         }
 
         this.imageChange = () => { }
@@ -99,7 +109,11 @@ export default class GuiControl {
         gui.add(params, 'save')
         gui.add(params, 'clear')
         gui.add(params, 'textsize').min(4).max(64).step(1).listen()
+        gui.add(params, 'jitRange').min(0).max(64).step(1).listen()
         gui.add(params, 'heightOffset').min(-20).max(20).step(1).listen()
+        gui.add(params, 'rotate').listen()
+        gui.add(params, 'rotation').min(-360).max(360).step(1)
+        gui.add(params, 'paintMode', params.paintModes).listen()
         gui.add(params, 'autoPaintMode').listen()
         gui.add(params, 'randomSizeMode').listen()
         gui.add(params, 'font', fontList).listen()

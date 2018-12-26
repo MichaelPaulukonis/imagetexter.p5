@@ -1,11 +1,11 @@
 // based on processing.js code at https://www.openprocessing.org/sketch/131411
 
 export default class Undo {
-  constructor (p5, levels) {
+  constructor (layers, renderFunc, levels) {
     // Number of currently available undo and redo snapshots
     let undoSteps = 0
     let redoSteps = 0
-    let images = new CircImgCollection(p5, levels)
+    let images = new CircImgCollection(layers, renderFunc, levels)
 
     this.takeSnapshot = () => {
       undoSteps = Math.min(undoSteps + 1, images.amount - 1)
@@ -35,7 +35,7 @@ export default class Undo {
 }
 
 class CircImgCollection {
-  constructor (p5, amountOfImages) {
+  constructor (layers, renderFunc, amountOfImages) {
     let current = 0
     let img = []
 
@@ -44,8 +44,8 @@ class CircImgCollection {
 
     // Initialize all images as copies of the current display
     for (let i = 0; i < amount; i++) {
-      img[i] = p5.createImage(p5.width, p5.height)
-      img[i] = p5.get()
+      img[i] = layers.p5.createImage(layers.drawingLayer.width, layers.drawingLayer.height)
+      img[i] = layers.drawingLayer.get()
     }
 
     this.next = () => {
@@ -55,10 +55,18 @@ class CircImgCollection {
       current = (current - 1 + amount) % amount
     }
     this.capture = () => {
-      img[current] = p5.get()
+      img[current] = layers.drawingLayer.get()
     }
     this.show = () => {
-      p5.image(img[current], 0, 0)
+      // this is not our only problem
+      // we need to replace the drawing layer
+      // and re-render the layers
+      // p5.blendMode(p5.NORMAL)
+      // p5.image(img[current], 0, 0)
+      // drawingLayer = img[current]
+      layers.drawingLayer.set(0, 0, img[current])
+      layers.drawingLayer.updatePixels()
+      renderFunc()
     }
   }
 }

@@ -13,7 +13,7 @@
  x - change black/white mode. mostly applies to alternate paint modes, or clearing screen
  DELETE - clear screen; sets to white/black depending upon black/white mode (default: black) 
  */
-import Undo from './undo.js' // TODO: implement
+import Undo from './undo.js'
 
 export default function Sketch (p5, textManager, params, guiControl) {
 
@@ -24,11 +24,15 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   const blackfield = '#000000';
   const whitefield = '#FFFFFF';
-  params.blackNotWhite = false;
+  params.blackText = false;
   var img;
   var drawingLayer // drawing layer
-  // var layer2 // image reference layer (for superimposition - manual comparison reference, not saved)
   let canvasSize = { x: 700, y: 700 }
+  var undo
+  let layers = {
+    drawingLayer,
+    p5
+  }
 
   const textInputBox = document.getElementById('bodycopy')
   let imageLoaded = false
@@ -45,7 +49,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
-    drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
+    layers.drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
 
     setBodyCopy(textManager.getText())
     const textButton = document.getElementById('applytext')
@@ -54,7 +58,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     })
     curPaintMode = params.paintMode || 2; // paint with background
     guiControl.setupGui(this)
-    parseImageSelection();
+    parseImageSelection()
+    undo = new Undo(layers, renderLayers, 10)
   }
 
   const renderSetup = (r) => {
@@ -67,7 +72,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   p5.draw = () => {
     if (params.autoPaintGrid && imageLoaded) {
-      paintGrid(drawingLayer)
+      paintGrid(layers.drawingLayer)
       params.autoPaintGrid = false
     }
     if (params.autoSave && imageLoaded) {
@@ -90,6 +95,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return mic
   }
 
+  p5.mouseReleased = () => {
+    undo.takeSnapshot()
+  }
+
   const renderLayers = () => {
     if (bypassRender) return
     clearLayer(p5)
@@ -97,7 +106,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // UNTIL the drawing has been cleared
     // not sure of the cleanest way to do it
     // not a common thing, but.... UGH
-    p5.blendMode(params.blackNotWhite ? p5.DARKEST : p5.LIGHTEST)
+    p5.blendMode(params.blackText ? p5.DARKEST : p5.LIGHTEST)
     if (params.showReference) {
       p5.push()
       p5.tint(255, (params.referenceTransparency / 100 * 255))
@@ -109,33 +118,43 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.renderLayers = renderLayers
 
   const renderTarget = () => {
-    p5.image(drawingLayer, 0, 0)
+    p5.image(layers.drawingLayer, 0, 0)
   }
   this.renderTarget = renderTarget
 
   const clearLayer = (r = p5) => {
     r.blendMode(p5.NORMAL)
-    var field = params.blackNotWhite ? whitefield : blackfield
+    var field = params.blackText ? whitefield : blackfield
     r.background(field)
   }
   this.clearLayer = clearLayer
 
   const clearDrawing = () => {
-    // TODO: everywhere, this appears to be inverted
-    // or it is named wrong. It's what the background should be
-    // TODO: also figure out how to make background ALPHA which would get rid of the whole need for blending
-    clearLayer(drawingLayer)
-    p5.blendMode(params.blackNotWhite ? p5.DARKEST : p5.LIGHTEST)
+    // TODO: figure out how to make background ALPHA which would get rid of the whole need for blending
+    clearLayer(layers.drawingLayer)
+    p5.blendMode(params.blackText ? p5.DARKEST : p5.LIGHTEST)
     renderLayers()
   }
   this.clearDrawing = clearDrawing
+
+  const paintTextAtPoint = (t, x, y, target) => {
+    if (params.rotate) {
+      target.push()
+      target.translate(x, y)
+      target.rotate(p5.radians(params.rotation))
+      target.text(t, 0, 0)
+      target.pop()
+    } else {
+      target.text(t, x, y)
+    }
+  }
 
   function paintWordAtPoint (locX, locY) {
     if (params.randomSizeMode) {
       paintRandomSizedWordNearPoint(locX, locY);
     }
     else {
-      drawingLayer.textSize(params.textsize);
+      layers.drawingLayer.textSize(params.textsize);
       paintWordNearPoint(locX, locY);
     }
   }
@@ -144,16 +163,16 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // absolute positioning
     const x = locX + getJitter()
     const y = locY + getJitter()
-    setFill(x, y, drawingLayer)
-    drawingLayer.text(textManager.getWord(), x, y)
+    setFill(x, y, layers.drawingLayer)
+    paintTextAtPoint(textManager.getWord(), x, y, layers.drawingLayer)
     renderLayers()
   }
 
   // paint word in a different size
   function paintRandomSizedWordNearPoint (locX, locY) {
-    drawingLayer.textSize(randomSizeNear(params.textsize));
+    layers.drawingLayer.textSize(randomSizeNear(params.textsize));
     paintWordNearPoint(locX, locY);
-    drawingLayer.textSize(params.textsize); // restore original size
+    layers.drawingLayer.textSize(params.textsize); // restore original size
   }
 
   function randomSizeNear (prevSize) {
@@ -167,21 +186,20 @@ export default function Sketch (p5, textManager, params, guiControl) {
     var step = 2;
     params.textsize = (params.textsize + step * direction);
     if (params.textsize < 1) params.textsize = step;
-    drawingLayer.textSize(params.textsize);
+    layers.drawingLayer.textSize(params.textsize);
   }
 
-  var jitRange = 20;
   function getJitter () {
-    return getRandomInt(-jitRange, jitRange)
+    return getRandomInt(-params.jitRange, params.jitRange)
   }
 
   function setJitRange (direction) {
-    var step = 5;
-    jitRange = (jitRange + step * direction);
-    if (jitRange < 1) jitRange = 1;
+    var step = 2;
+    params.jitRange = (params.jitRange + step * direction);
+    if (params.jitRange < 0) params.jitRange = 0;
   }
 
-  const setFont = (font, layer = drawingLayer) => {
+  const setFont = (font, layer = layers.drawingLayer) => {
     layer.textFont(font)
   }
   this.setFont = setFont
@@ -192,12 +210,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
     } else {
       img.resize(p5.width, 0)
       p5.resizeCanvas(p5.width, img.height)
-      drawingLayer = initializeDrawingLayer(p5.width, p5.height)
+      layers.drawingLayer = initializeDrawingLayer(p5.width, p5.height)
     }
     renderSetup(p5)
-    renderSetup(drawingLayer)
+    renderSetup(layers.drawingLayer)
     img.loadPixels()
-    clearLayer(drawingLayer)
+    clearLayer(layers.drawingLayer)
     imageLoaded = true
     renderLayers()
   }
@@ -223,9 +241,15 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   // print a grid of characters from upper-left to lower-right
   // TODO: not honoring text size (probably a layers thing)
-  const paintGrid = (r = drawingLayer) => {
+  const paintGrid = (r = layers.drawingLayer) => {
     r.textSize(params.textsize)
+    // if (params.rotate) {
+    //   r.textAlign(p5.CENTER, p5.CENTER);
+    // } else {
+    //   r.textAlign(p5.LEFT, p5.BOTTOM);
+    // }
     r.textAlign(p5.LEFT, p5.BOTTOM);
+
     var nextX = 0
     var nextY = 0
     var yOffset = r.textAscent() + params.heightOffset
@@ -234,11 +258,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
     nextY = nextY + yOffset;
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
       setFill(nextX, nextY, r);
-      r.text(w, nextX, nextY);
+      paintTextAtPoint(w, nextX, nextY, r)
       nextX = nextX + r.textWidth(w);
       w = textManager.getchar();
       // this can leave a gap on the right - there should be _some_ overlap
-      if (nextX + r.textWidth(w) > p5.width) {
+      // if (nextX + r.textWidth(w) > p5.width) {
+      // if only 1/4 of the letter will be seen, jump to next line
+      if (nextX + (0.25 * r.textWidth(w)) > p5.width) {
         nextX = 0;
         nextY = nextY + yOffset;
       }
@@ -247,7 +273,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     renderLayers(params)
   }
 
-  var paintModes = 4;
+  const paintModes = Object.keys(params.paintModes).length
   var curPaintMode = 0;
   function nextPaintMode (direction) {
     curPaintMode = (curPaintMode + direction) % paintModes;
@@ -261,11 +287,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (locY < 0) locY = 0;
     if (locY >= p5.height) locY = p5.height - 1;
 
-    switch (curPaintMode) {
+
+    switch (parseInt(params.paintMode, 10)) {
 
       case 0:
       default:
-        if (params.blackNotWhite) {
+        if (params.blackText) {
           renderer.fill(blackfield);
         }
         else {
@@ -289,6 +316,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
       case 3:
         renderer.fill(blackfield)
+        break
+
+      case 4:
+        renderer.fill(whitefield)
         break
     }
   }
@@ -338,6 +369,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       setJitRange(keyCode === p5.RIGHT_ARROW ? 1 : -1)
     }
     else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
+      undo.takeSnapshot()
       handled = true
       clearDrawing()
     }
@@ -368,12 +400,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
         break;
 
       case 'c':
-        clearLayer(drawingLayer);
+        undo.takeSnapshot()
+        clearLayer(layers.drawingLayer);
         renderLayers()
         break;
 
       case 'g':
-        paintGrid(drawingLayer);
+        undo.takeSnapshot()
+        paintGrid(layers.drawingLayer);
         renderLayers()
         break;
 
@@ -392,10 +426,19 @@ export default function Sketch (p5, textManager, params, guiControl) {
         this.saveSketch();
         break;
 
+      case 'u':
+        undo.undo()
+        break
+      case 'U':
+        undo.redo()
+        break
+
       case 'x':
       case 'X':
-        params.blackNotWhite = !params.blackNotWhite;
-        setFill(p5.mouseX, p5.mouseY, drawingLayer);
+        params.blackText = !params.blackText;
+        setFill(p5.mouseX, p5.mouseY, layers.drawingLayer);
+        // TODO; render layers, or something - need do the backgeound
+        // don't think this is possible. WAAAAH!
         break;
     }
   }
@@ -412,6 +455,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   const macroWrapper = (f) => () => {
     // the whole `bypassRender` global is awkward
     // at least we've got the wrapper
+    undo.takeSnapshot()
     bypassRender = true
     f()
     bypassRender = false

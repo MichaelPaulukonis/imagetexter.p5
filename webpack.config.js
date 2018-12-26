@@ -6,7 +6,6 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const loader = require('./loadImages.js')
 const images = loader('./assets/images')
-console.log(JSON.stringify(images))
 
 module.exports = {
   entry: {
@@ -19,6 +18,7 @@ module.exports = {
     openPage: '',
     stats: 'normal',
   },
+  devtool: 'eval-source-map',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[chunkhash].js'
@@ -64,7 +64,7 @@ module.exports = {
     //   name: 'manifest'
     // }),
   ],
-  devtool: 'source-map',
+  // devtool: 'source-map',
   optimization: {
     splitChunks: {
       chunks: 'all'
