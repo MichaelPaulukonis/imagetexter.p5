@@ -26,10 +26,7 @@ module.exports = {
   resolve: {
     extensions: [
       '.js'
-    ],
-    // alias: {
-    //   Assets: path.resolve(__dirname, 'assets/')
-    // }
+    ]
   },
   module: {
     // loaders: [
@@ -46,7 +43,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src', 'index.html'),
-      inject: 'body',
+      inject: 'body'
     }),
     new CopyWebpackPlugin([
       {
