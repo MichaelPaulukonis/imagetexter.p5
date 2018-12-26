@@ -49,7 +49,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
     canvas.drop(gotFile);
+<<<<<<< HEAD
     layers.drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
+=======
+    drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
+>>>>>>> imagesFonts
 
     setBodyCopy(textManager.getText())
     const textButton = document.getElementById('applytext')
@@ -58,8 +62,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
     })
     curPaintMode = params.paintMode || 2; // paint with background
     guiControl.setupGui(this)
+<<<<<<< HEAD
     parseImageSelection()
     undo = new Undo(layers, renderLayers, 10)
+=======
+    parseImageSelection();
+>>>>>>> imagesFonts
   }
 
   const renderSetup = (r) => {
@@ -100,6 +108,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderLayers = () => {
+<<<<<<< HEAD
     if (bypassRender) return
     clearLayer(p5)
     // once the param changes, we should NOT use the changed version
@@ -107,6 +116,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // not sure of the cleanest way to do it
     // not a common thing, but.... UGH
     p5.blendMode(params.blackText ? p5.DARKEST : p5.LIGHTEST)
+=======
+    clearCanvas(p5)
+    p5.blendMode(p5.LIGHTEST)
+>>>>>>> imagesFonts
     if (params.showReference) {
       p5.push()
       p5.tint(255, (params.referenceTransparency / 100 * 255))
@@ -163,8 +176,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // absolute positioning
     const x = locX + getJitter()
     const y = locY + getJitter()
+<<<<<<< HEAD
     setFill(x, y, layers.drawingLayer)
     paintTextAtPoint(textManager.getWord(), x, y, layers.drawingLayer)
+=======
+    setFill(x, y, drawingLayer);
+    // shouldn't this be CENTERED ?????
+    drawingLayer.text(textManager.getWord(), x, y);
+>>>>>>> imagesFonts
     renderLayers()
   }
 
@@ -182,6 +201,16 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return newsize;
   }
 
+<<<<<<< HEAD
+=======
+  const clearCanvas = (r = p5) => {
+    r.blendMode(p5.NORMAL)
+    var field = params.blackNotWhite ? whitefield : blackfield
+    r.background(field)
+  }
+  this.clearCanvas = clearCanvas
+
+>>>>>>> imagesFonts
   function changeTextsize (direction) {
     var step = 2;
     params.textsize = (params.textsize + step * direction);
@@ -199,12 +228,18 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (params.jitRange < 0) params.jitRange = 0;
   }
 
+<<<<<<< HEAD
   const setFont = (font, layer = layers.drawingLayer) => {
+=======
+  const setFont = (font, layer = drawingLayer) => {
+>>>>>>> imagesFonts
     layer.textFont(font)
   }
   this.setFont = setFont
 
   const imageReady = () => {
+    renderSetup(p5)
+    renderSetup(drawingLayer)
     if (img.height < p5.height) {
       img.resize(0, p5.height)
     } else {

@@ -1,3 +1,4 @@
+// TODO: make this dependent on build config
 // import P5 from 'p5'
 // import P5 from 'p5/lib/p5.min'
 import P5 from 'p5'
