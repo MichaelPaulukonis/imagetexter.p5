@@ -1,7 +1,7 @@
 /*
  A text-painter, with var coming (primarily) from 4 possible images.
  Try painting a grid, reducing the size, and painting again!
- 
+
  UP/DOWN - change text size
  LEFT/RIGHT - change amount of "jitter" (random offset for painting)
  a - toggle AutoPaint (on/off)
@@ -11,21 +11,20 @@
  m/M - change paint Mode (the default mode takes var from images)
  s - save
  x - change black/white mode. mostly applies to alternate paint modes, or clearing screen
- DELETE - clear screen; sets to white/black depending upon black/white mode (default: black) 
+ DELETE - clear screen; sets to white/black depending upon black/white mode (default: black)
  */
 import Undo from './undo.js'
 
 export default function Sketch (p5, textManager, params, guiControl) {
-
-  params.textsize = params.textsize || 10;
-  params.randomSizeMode = params.randomSizeMode || true;
+  params.textsize = params.textsize || 10
+  params.randomSizeMode = params.randomSizeMode || true
 
   let bypassRender = false
 
-  const blackfield = '#000000';
-  const whitefield = '#FFFFFF';
-  params.blackText = false;
-  var img;
+  const blackfield = '#000000'
+  const whitefield = '#FFFFFF'
+  params.blackText = false
+  var img
   var drawingLayer // drawing layer
   let canvasSize = { x: 700, y: 700 }
   var undo
@@ -48,7 +47,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   p5.setup = () => {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
-    canvas.drop(gotFile);
+    canvas.drop(gotFile)
     layers.drawingLayer = initializeDrawingLayer(canvasSize.x, canvasSize.y)
 
     setBodyCopy(textManager.getText())
@@ -56,7 +55,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     textButton.addEventListener('click', () => {
       textManager.setText(getBodyCopy())
     })
-    curPaintMode = params.paintMode || 2; // paint with background
+    curPaintMode = params.paintMode || 2 // paint with background
     guiControl.setupGui(this)
     parseImageSelection()
     undo = new Undo(layers, renderLayers, 10)
@@ -64,9 +63,9 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   const renderSetup = (r) => {
     r.pixelDensity(1)
-    clearLayer(r);
-    r.textSize(params.textsize);
-    r.textAlign(p5.CENTER, p5.CENTER);
+    clearLayer(r)
+    r.textSize(params.textsize)
+    r.textAlign(p5.CENTER, p5.CENTER)
     r.textFont(params.font)
   }
 
@@ -81,12 +80,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
 
     if (params.autoPaintMode) {
-      paintWordInRegion(0, 0, p5.width, p5.height);
-      return;
+      paintWordInRegion(0, 0, p5.width, p5.height)
+      return
     }
 
     if (p5.mouseIsPressed && mouseInCanvas()) {
-      paintWordAtPoint(p5.mouseX, p5.mouseY);
+      paintWordAtPoint(p5.mouseX, p5.mouseY)
     }
   }
 
@@ -151,11 +150,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   function paintWordAtPoint (locX, locY) {
     if (params.randomSizeMode) {
-      paintRandomSizedWordNearPoint(locX, locY);
-    }
-    else {
-      layers.drawingLayer.textSize(params.textsize);
-      paintWordNearPoint(locX, locY);
+      paintRandomSizedWordNearPoint(locX, locY)
+    } else {
+      layers.drawingLayer.textSize(params.textsize)
+      paintWordNearPoint(locX, locY)
     }
   }
 
@@ -170,39 +168,39 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   // paint word in a different size
   function paintRandomSizedWordNearPoint (locX, locY) {
-    layers.drawingLayer.textSize(randomSizeNear(params.textsize));
-    paintWordNearPoint(locX, locY);
-    layers.drawingLayer.textSize(params.textsize); // restore original size
+    layers.drawingLayer.textSize(randomSizeNear(params.textsize))
+    paintWordNearPoint(locX, locY)
+    layers.drawingLayer.textSize(params.textsize) // restore original size
   }
 
   function randomSizeNear (prevSize) {
-    var offset = textSizeJitter();
-    var newsize = offset + prevSize;
-    if (newsize < 2) newsize = 2;
-    return newsize;
+    var offset = textSizeJitter()
+    var newsize = offset + prevSize
+    if (newsize < 2) newsize = 2
+    return newsize
   }
 
   function changeTextsize (direction) {
-    var step = 2;
-    params.textsize = (params.textsize + step * direction);
-    if (params.textsize < 1) params.textsize = step;
-    layers.drawingLayer.textSize(params.textsize);
+    var step = 2
+    params.textsize = (params.textsize + step * direction)
+    if (params.textsize < 1) params.textsize = step
+    layers.drawingLayer.textSize(params.textsize)
   }
 
   const makeJitterGetter = (param) => () => {
     return getRandomInt(-params[param], params[param])
-  }     
+  }
 
   const makeSetJitter = (param) => (direction) => {
-    var step = 2;
-    params[param] = (params[param]+ step * direction);
-    if (params[param] < 0) params[param] = 0;
+    var step = 2
+    params[param] = (params[param] + step * direction)
+    if (params[param] < 0) params[param] = 0
   }
 
   const distanceJitter = makeJitterGetter('distanceJitRange')
   const textSizeJitter = makeJitterGetter('textsizeJitRange')
   const setDistanceJitRange = makeSetJitter('distanceJitRange') // used with a gui key only
-  const setTextSizeJitRange = makeSetJitter('textsizeJitRange') // unmapped
+  // const setTextSizeJitRange = makeSetJitter('textsizeJitRange') // unmapped
 
   const setFont = (font, layer = layers.drawingLayer) => {
     layer.textFont(font)
@@ -247,7 +245,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.setImage = setImage
 
   // print a grid of characters from upper-left to lower-right
-  // TODO: not honoring text size (probably a layers thing)
   const paintGrid = (r = layers.drawingLayer) => {
     r.textSize(params.textsize)
     // if (params.rotate) {
@@ -255,71 +252,67 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // } else {
     //   r.textAlign(p5.LEFT, p5.BOTTOM);
     // }
-    r.textAlign(p5.LEFT, p5.BOTTOM);
+    r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
     var nextX = 0
     var nextY = 0
     var yOffset = r.textAscent() + params.heightOffset
     yOffset = (yOffset > 2) ? yOffset : 3
-    var w = textManager.getchar();
-    nextY = nextY + yOffset;
+    var w = textManager.getchar()
+    nextY = nextY + yOffset
     while (nextX < p5.width && (nextY - yOffset) < p5.height) {
-      setFill(nextX, nextY, r);
+      setFill(nextX, nextY, r)
       paintTextAtPoint(w, nextX, nextY, r)
-      nextX = nextX + r.textWidth(w);
-      w = textManager.getchar();
+      nextX = nextX + r.textWidth(w)
+      w = textManager.getchar()
       // this can leave a gap on the right - there should be _some_ overlap
       // if (nextX + r.textWidth(w) > p5.width) {
       // if only 1/4 of the letter will be seen, jump to next line
       if (nextX + (0.25 * r.textWidth(w)) > p5.width) {
-        nextX = 0;
-        nextY = nextY + yOffset;
+        nextX = 0
+        nextY = nextY + yOffset
       }
     }
-    r.textAlign(p5.CENTER, p5.CENTER);
+    r.textAlign(p5.CENTER, p5.CENTER)
     renderLayers(params)
   }
 
   const paintModes = Object.keys(params.paintModes).length
-  var curPaintMode = 0;
+  var curPaintMode = 0
   function nextPaintMode (direction) {
-    curPaintMode = (curPaintMode + direction) % paintModes;
-    if (curPaintMode < 0) curPaintMode = paintModes - 1;
+    curPaintMode = (curPaintMode + direction) % paintModes
+    if (curPaintMode < 0) curPaintMode = paintModes - 1
   }
 
   function setFill (locX, locY, renderer) {
-
-    if (locX < 0) locX = 0;
-    if (locX >= p5.width) locX = p5.width - 1;
-    if (locY < 0) locY = 0;
-    if (locY >= p5.height) locY = p5.height - 1;
-
+    if (locX < 0) locX = 0
+    if (locX >= p5.width) locX = p5.width - 1
+    if (locY < 0) locY = 0
+    if (locY >= p5.height) locY = p5.height - 1
 
     switch (parseInt(params.paintMode, 10)) {
-
       case 0:
       default:
         if (params.blackText) {
-          renderer.fill(blackfield);
-        }
-        else {
-          renderer.fill(whitefield);
+          renderer.fill(blackfield)
+        } else {
+          renderer.fill(whitefield)
         }
 
-        break;
+        break
 
       // this is the one I'm really interested in for the project
       case 2:
         // This is adapted from the get() source - but is faster, since loadPixels()
         // is not performed on each iteration
-        var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data;
-        renderer.fill(pix[0], pix[1], pix[2]);
-        break;
+        var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data
+        renderer.fill(pix[0], pix[1], pix[2])
+        break
 
       case 1:
         // TODO: fill based on... mouseX/MouseY + offset?
-        renderer.fill(locX, locY, 100);
-        break;
+        renderer.fill(locX, locY, 100)
+        break
 
       case 3:
         renderer.fill(blackfield)
@@ -332,11 +325,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   function toggleAutoPaintMode () {
-    params.autoPaintMode = !params.autoPaintMode;
+    params.autoPaintMode = !params.autoPaintMode
   }
 
   const getRandomInt = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(Math.random() * (max - min + 1)) + min
   }
 
   const getRandom = (arr) => {
@@ -350,7 +343,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   function toggleRandomSizeMode () {
-    params.randomSizeMode = !params.randomSizeMode;
+    params.randomSizeMode = !params.randomSizeMode
   }
 
   p5.keyPressed = () => {
@@ -370,12 +363,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (keyCode === p5.UP_ARROW || keyCode === p5.DOWN_ARROW) {
       handled = true
       changeTextsize(keyCode === p5.UP_ARROW ? 1 : -1)
-    }
-    else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
+    } else if (keyCode === p5.RIGHT_ARROW || keyCode === p5.LEFT_ARROW) {
       handled = true
       setDistanceJitRange(keyCode === p5.RIGHT_ARROW ? 1 : -1)
-    }
-    else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
+    } else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
       undo.takeSnapshot()
       handled = true
       clearDrawing()
@@ -385,53 +376,52 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   let keyHandler = (char) => {
     switch (char) {
-
       case '1':
         macro1()
-        break;
+        break
 
       case '2':
         macro2()
-        break;
+        break
 
       case '3':
         macro3()
-        break;
+        break
 
       case '5':
-        parseImageSelection();
-        break;
+        parseImageSelection()
+        break
 
       case 'a':
-        toggleAutoPaintMode();
-        break;
+        toggleAutoPaintMode()
+        break
 
       case 'c':
         undo.takeSnapshot()
-        clearLayer(layers.drawingLayer);
+        clearLayer(layers.drawingLayer)
         renderLayers()
-        break;
+        break
 
       case 'g':
         undo.takeSnapshot()
-        paintGrid(layers.drawingLayer);
+        paintGrid(layers.drawingLayer)
         renderLayers()
-        break;
+        break
 
       case 'm':
-        nextPaintMode(1);
-        break;
+        nextPaintMode(1)
+        break
       case 'M':
-        nextPaintMode(-1);
-        break;
+        nextPaintMode(-1)
+        break
 
       case 'r':
-        toggleRandomSizeMode();
-        break;
+        toggleRandomSizeMode()
+        break
 
       case 's':
-        this.saveSketch();
-        break;
+        this.saveSketch()
+        break
 
       case 'u':
         undo.undo()
@@ -442,11 +432,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
       case 'x':
       case 'X':
-        params.blackText = !params.blackText;
-        setFill(p5.mouseX, p5.mouseY, layers.drawingLayer);
+        params.blackText = !params.blackText
+        setFill(p5.mouseX, p5.mouseY, layers.drawingLayer)
         // TODO; render layers, or something - need do the backgeound
         // don't think this is possible. WAAAAH!
-        break;
+        break
     }
   }
 
@@ -455,7 +445,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (file.type === 'image') {
       img = p5.loadImage(file.data, imageReady)
     } else {
-      p5.println('Not an image file!');
+      p5.println('Not an image file!')
     }
   }
 
@@ -478,5 +468,4 @@ export default function Sketch (p5, textManager, params, guiControl) {
   const macro1 = macroWrapper(paintNwords(50))
   const macro2 = macroWrapper(paintNwords(1000))
   const macro3 = macroWrapper(paintNwords(5000))
-
 }

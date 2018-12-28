@@ -1,8 +1,8 @@
-const webpack = require('webpack');
-const path = require('path');
+const webpack = require('webpack')
+const path = require('path')
 
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const loader = require('./loadImages.js')
 const images = loader('./assets/images')
@@ -16,7 +16,7 @@ module.exports = {
     port: 8080,
     open: true,
     openPage: '',
-    stats: 'normal',
+    stats: 'normal'
   },
   devtool: 'eval-source-map',
   output: {
@@ -48,9 +48,9 @@ module.exports = {
     new CopyWebpackPlugin([
       {
         from: path.resolve(__dirname, 'assets'),
-        to: path.resolve(__dirname, 'dist', 'assets'),
+        to: path.resolve(__dirname, 'dist', 'assets')
       }
-    ]),
+    ])
     // new webpack.optimize.CommonsChunkPlugin({
     //   name: 'vendor',
     //   minChunks: function (module) {
@@ -67,4 +67,4 @@ module.exports = {
       chunks: 'all'
     }
   }
-};
+}
