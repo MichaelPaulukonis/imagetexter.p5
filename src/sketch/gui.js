@@ -77,7 +77,8 @@ export default class GuiControl {
             clear: () => { },
             paintMode: 2,
             textsize: 10,
-            jitRange: 20,
+            distanceJitRange: 20,
+            textsizeJitRange: 20,
             heightOffset: 0,
             autoPaintMode: false,
             randomSizeMode: true,
@@ -108,7 +109,8 @@ export default class GuiControl {
         gui.add(params, 'save')
         gui.add(params, 'clear')
         gui.add(params, 'textsize').min(4).max(64).step(1).listen()
-        gui.add(params, 'jitRange').min(0).max(64).step(1).listen()
+        gui.add(params, 'textsizeJitRange').min(0).max(64).step(1).listen()
+        gui.add(params, 'distanceJitRange').min(0).max(64).step(1).listen()
         gui.add(params, 'heightOffset').min(-20).max(20).step(1).listen()
         gui.add(params, 'rotate').listen()
         gui.add(params, 'rotation').min(-360).max(360).step(1)

@@ -161,8 +161,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   function paintWordNearPoint (locX, locY) {
     // absolute positioning
-    const x = locX + getJitter()
-    const y = locY + getJitter()
+    const x = locX + distanceJitter()
+    const y = locY + distanceJitter()
     setFill(x, y, layers.drawingLayer)
     paintTextAtPoint(textManager.getWord(), x, y, layers.drawingLayer)
     renderLayers()
@@ -176,7 +176,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   function randomSizeNear (prevSize) {
-    var offset = getJitter();
+    var offset = textSizeJitter();
     var newsize = offset + prevSize;
     if (newsize < 2) newsize = 2;
     return newsize;
@@ -189,15 +189,20 @@ export default function Sketch (p5, textManager, params, guiControl) {
     layers.drawingLayer.textSize(params.textsize);
   }
 
-  function getJitter () {
-    return getRandomInt(-params.jitRange, params.jitRange)
+  const makeJitterGetter = (param) => () => {
+    return getRandomInt(-params[param], params[param])
+  }     
+
+  const makeSetJitter = (param) => (direction) => {
+    var step = 2;
+    params[param] = (params[param]+ step * direction);
+    if (params[param] < 0) params[param] = 0;
   }
 
-  function setJitRange (direction) {
-    var step = 2;
-    params.jitRange = (params.jitRange + step * direction);
-    if (params.jitRange < 0) params.jitRange = 0;
-  }
+  const distanceJitter = makeJitterGetter('distanceJitRange')
+  const textSizeJitter = makeJitterGetter('textsizeJitRange')
+  const setDistanceJitRange = makeSetJitter('distanceJitRange') // used with a gui key only
+  const setTextSizeJitRange = makeSetJitter('textsizeJitRange') // unmapped
 
   const setFont = (font, layer = layers.drawingLayer) => {
     layer.textFont(font)
@@ -368,7 +373,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
     else if (keyCode == p5.RIGHT_ARROW || keyCode == p5.LEFT_ARROW) {
       handled = true
-      setJitRange(keyCode === p5.RIGHT_ARROW ? 1 : -1)
+      setDistanceJitRange(keyCode === p5.RIGHT_ARROW ? 1 : -1)
     }
     else if (keyCode === p5.BACKSPACE || keyCode === p5.DELETE) {
       undo.takeSnapshot()
