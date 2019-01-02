@@ -57,7 +57,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     })
     curPaintMode = params.paintMode || 2 // paint with background
     guiControl.setupGui(this)
-    parseImageSelection()
+    setRandomImage()
     undo = new Undo(layers, renderLayers, 10)
   }
 
@@ -136,7 +136,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
   this.clearDrawing = clearDrawing
 
-  const paintTextAtPoint = (t, x, y, target) => {
+  const paintTextAtPoint = (t, coords, target) => {
+    const { x, y } = coords
     if (params.rotate) {
       target.push()
       target.translate(x, y)
@@ -162,7 +163,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     const x = locX + distanceJitter()
     const y = locY + distanceJitter()
     setFill(x, y, layers.drawingLayer)
-    paintTextAtPoint(textManager.getWord(), x, y, layers.drawingLayer)
+    paintTextAtPoint(textManager.getWord(), { x, y }, layers.drawingLayer)
     renderLayers()
   }
 
@@ -231,7 +232,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return layer
   }
 
-  function parseImageSelection () {
+  function setRandomImage () {
     params.image = getRandom(params.images)
     // seriously? this is not part of sketch - it's external knowledge
     // ALSO NOT PART OF THE GUI - it should be provided
@@ -245,36 +246,44 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.setImage = setImage
 
   // print a grid of characters from upper-left to lower-right
-  const paintGrid = (r = layers.drawingLayer) => {
+  const paintGrid = (r = layers.drawingLayer, nextText = textManager.getchar) => {
     r.textSize(params.textsize)
-    // if (params.rotate) {
-    //   r.textAlign(p5.CENTER, p5.CENTER);
-    // } else {
-    //   r.textAlign(p5.LEFT, p5.BOTTOM);
-    // }
     r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
-    var nextX = 0
-    var nextY = 0
-    var yOffset = r.textAscent() + params.heightOffset
-    yOffset = (yOffset > 2) ? yOffset : 3
-    var w = textManager.getchar()
-    nextY = nextY + yOffset
-    while (nextX < p5.width && (nextY - yOffset) < p5.height) {
-      setFill(nextX, nextY, r)
-      paintTextAtPoint(w, nextX, nextY, r)
-      nextX = nextX + r.textWidth(w)
-      w = textManager.getchar()
-      // this can leave a gap on the right - there should be _some_ overlap
-      // if (nextX + r.textWidth(w) > p5.width) {
-      // if only 1/4 of the letter will be seen, jump to next line
-      if (nextX + (0.25 * r.textWidth(w)) > p5.width) {
-        nextX = 0
-        nextY = nextY + yOffset
-      }
+    const yOffset = getYoffset(r.textAscent(), params.heightOffset)
+    let offsets = { x: 0, y: yOffset }
+    let coords = { x: 0, y: yOffset }
+    while (hasNextCoord(coords, whOnly(p5), yOffset)) {
+      r.fill(getFill(coords.x, coords.y, params.paintMode))
+      let t = nextText()
+      offsets.x = r.textWidth(t)
+      paintTextAtPoint(t, { x: coords.x, y: coords.y }, r)
+      coords = nextCoord(coords, offsets, p5.width)
     }
     r.textAlign(p5.CENTER, p5.CENTER)
     renderLayers(params)
+  }
+
+  const getYoffset = (textAscent, heightOffset) => {
+    var yOffset = textAscent + heightOffset
+    yOffset = (yOffset > 2) ? yOffset : 3
+    return yOffset
+  }
+
+  const whOnly = obj => ({ width: obj.width, height: obj.height })
+
+  const hasNextCoord = (coords, gridSize, yOffset) => {
+    return coords.x < gridSize.width && (coords.y - yOffset) < gridSize.height
+  }
+
+  const nextCoord = (coords, offsets, gridWidth) => {
+    let nc = { ...coords }
+    nc.x = nc.x + offsets.x
+    if (nc.x + (0.25 * offsets.x) > gridWidth) {
+      nc.x = 0
+      nc.y = nc.y + offsets.y
+    }
+    return nc
   }
 
   const paintModes = Object.keys(params.paintModes).length
@@ -321,6 +330,37 @@ export default function Sketch (p5, textManager, params, guiControl) {
       case 4:
         renderer.fill(whitefield)
         break
+    }
+  }
+
+  const getFill = (locX, locY, paintMode) => {
+    if (locX < 0) locX = 0
+    if (locX >= p5.width) locX = p5.width - 1
+    if (locY < 0) locY = 0
+    if (locY >= p5.height) locY = p5.height - 1
+
+    switch (parseInt(paintMode, 10)) {
+      case 0:
+      default:
+        return (params.blackText) ? blackfield : whitefield
+
+      // this is the one I'm really interested in for the project
+      case 2:
+        // This is adapted from the get() source - but is faster, since loadPixels()
+        // is not performed on each iteration
+        // ugh, img and p5 are not passed in......
+        var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data
+        return p5.color(pix[0], pix[1], pix[2])
+
+      case 1:
+        // TODO: fill based on... mouseX/MouseY + offset?
+        return p5.color(locX, locY, 100)
+
+      case 3:
+        return blackfield
+
+      case 4:
+        return whitefield
     }
   }
 
@@ -389,7 +429,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
         break
 
       case '5':
-        parseImageSelection()
+        setRandomImage()
         break
 
       case 'a':

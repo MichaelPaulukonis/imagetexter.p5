@@ -76,7 +76,7 @@ export default class GuiControl {
       save: saveSketch,
       clear: () => { },
       paintMode: 2,
-      textsize: 10,
+      textsize: 18,
       distanceJitRange: 20,
       textsizeJitRange: 20,
       heightOffset: 0,
