@@ -444,7 +444,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
       case 'g':
         undo.takeSnapshot()
-        paintGrid(layers.drawingLayer)
+        const textFunc = (parseInt(params.textMode, 10) === 0 ? textManager.getchar : textManager.getWord)
+        paintGrid(layers.drawingLayer, textFunc)
         renderLayers()
         break
 

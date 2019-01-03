@@ -75,11 +75,15 @@ export default class GuiControl {
       // bind after defined in sketch (call setupGui)
       save: saveSketch,
       clear: () => { },
-      paintMode: 2,
       textsize: 18,
       distanceJitRange: 20,
       textsizeJitRange: 20,
       heightOffset: 0,
+      textModes: {
+        'character': 0,
+        'word': 1
+      },
+      textMode: 0,
       autoPaintMode: false,
       randomSizeMode: true,
       font: fontList[0],
@@ -89,6 +93,7 @@ export default class GuiControl {
       image: imageList[0],
       showReference: true,
       referenceTransparency: 25,
+      paintMode: 2,
       paintModes: {
         'black/white': 0,
         'rainbowish': 1,
@@ -112,6 +117,7 @@ export default class GuiControl {
     gui.add(params, 'textsizeJitRange').min(0).max(64).step(1).listen()
     gui.add(params, 'distanceJitRange').min(0).max(64).step(1).listen()
     gui.add(params, 'heightOffset').min(-20).max(20).step(1).listen()
+    gui.add(params, 'textMode', params.textModes).listen()
     gui.add(params, 'rotate').listen()
     gui.add(params, 'rotation').min(-360).max(360).step(1)
     gui.add(params, 'paintMode', params.paintModes).listen()

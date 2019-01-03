@@ -22,7 +22,12 @@ Into something rich and strange.
 Sea-nymphs hourly ring his knell:
 Ding-dong.
 Hark! now I hear them—Ding-dong, bell.`
+    // splitwords() loses all whitespace and punctuation
+    // whitespace is fine (we can add it manually)
+    // but the puncts should be retained
+    // That's more problematic. UGH.
     var SPLIT_TOKENS = '[ ?.,;:<>()"]'
+    const splitwords = (text) => text.match(/(?!'.*')\b[\w']+\b/g)
     var charIndex = 0
     var wordIndex = 0
     let self = this
@@ -45,7 +50,8 @@ Hark! now I hear them—Ding-dong, bell.`
     }
     self.setText = function (text) {
       self.w = text
-      self.words = self.w.split(new RegExp(SPLIT_TOKENS, 'g'))
+      // self.words = self.w.split(new RegExp(SPLIT_TOKENS, 'g'))
+      self.words = splitwords(text)
       wordIndex = 0
       charIndex = 0
     }
