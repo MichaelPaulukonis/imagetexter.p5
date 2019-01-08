@@ -256,8 +256,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     while (hasNextCoord(coords, whOnly(p5), yOffset)) {
       r.fill(getFill(coords.x, coords.y, params.paintMode))
       let t = nextText()
+      paintTextAtPoint(t, coords, r)
       offsets.x = r.textWidth(t)
-      paintTextAtPoint(t, { x: coords.x, y: coords.y }, r)
       coords = nextCoord(coords, offsets, p5.width)
     }
     r.textAlign(p5.CENTER, p5.CENTER)
@@ -284,6 +284,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
       nc.y = nc.y + offsets.y
     }
     return nc
+  }
+
+  function * coordGenerator () {
+
   }
 
   const paintModes = Object.keys(params.paintModes).length
@@ -428,6 +432,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
         macro3()
         break
 
+      case '4':
+        macro4()
+        break
+
       case '5':
         setRandomImage()
         break
@@ -509,4 +517,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
   const macro1 = macroWrapper(paintNwords(50))
   const macro2 = macroWrapper(paintNwords(1000))
   const macro3 = macroWrapper(paintNwords(5000))
+  const macro4 = macroWrapper(() => {
+    const { rotate, rotation } = params
+    params.rotate = true
+    params.rotation = 45
+    paintNwords(1000)()
+    params.rotation = -45
+    paintNwords(1000)()
+    params.rotate = rotate
+    params.rotation = rotation
+  })
 }
