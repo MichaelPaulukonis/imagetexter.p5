@@ -129,7 +129,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
   this.clearLayer = clearLayer
 
   const clearDrawing = () => {
-    // TODO: figure out how to make background ALPHA which would get rid of the whole need for blending
     clearLayer(layers.drawingLayer)
     p5.blendMode(params.blackText ? p5.DARKEST : p5.LIGHTEST)
     renderLayers()
@@ -251,14 +250,13 @@ export default function Sketch (p5, textManager, params, guiControl) {
     r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
     const yOffset = getYoffset(r.textAscent(), params.heightOffset)
-    let offsets = { x: 0, y: yOffset }
-    let coords = { x: 0, y: yOffset }
-    while (hasNextCoord(coords, whOnly(p5), yOffset)) {
-      r.fill(getFill(coords.x, coords.y, params.paintMode))
-      let t = nextText()
-      paintTextAtPoint(t, coords, r)
-      offsets.x = r.textWidth(t)
-      coords = nextCoord(coords, offsets, p5.width)
+    let cg = blocGenerator(nextText, whOnly(p5), yOffset, r)
+    let blob = cg.next()
+    while (!blob.done) {
+      const bloc = blob.value
+      r.fill(getFill(bloc.x, bloc.y, params.paintMode))
+      paintTextAtPoint(bloc.text, bloc, r)
+      blob = cg.next()
     }
     r.textAlign(p5.CENTER, p5.CENTER)
     renderLayers(params)
@@ -286,8 +284,17 @@ export default function Sketch (p5, textManager, params, guiControl) {
     return nc
   }
 
-  function * coordGenerator () {
-
+  function * blocGenerator (nextText, gridSize, yOffset, r) {
+    let t = nextText()
+    let coords = { x: 0, y: yOffset }
+    let offsets = { x: 0, y: yOffset }
+    while (hasNextCoord(coords, gridSize, yOffset)) {
+      yield { text: t, x: coords.x, y: coords.y }
+      offsets.x = r.textWidth(t)
+      coords = nextCoord(coords, offsets, gridSize.width)
+      t = nextText()
+    }
+    return 'done'
   }
 
   const paintModes = Object.keys(params.paintModes).length
@@ -297,6 +304,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (curPaintMode < 0) curPaintMode = paintModes - 1
   }
 
+  // TODO: DEPRECATED
+  // replace with other method
   function setFill (locX, locY, renderer) {
     if (locX < 0) locX = 0
     if (locX >= p5.width) locX = p5.width - 1
@@ -453,6 +462,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       case 'g':
         undo.takeSnapshot()
         const textFunc = (parseInt(params.textMode, 10) === 0 ? textManager.getchar : textManager.getWord)
+        // paintGrid(layers.drawingLayer, textFunc)
         paintGrid(layers.drawingLayer, textFunc)
         renderLayers()
         break
@@ -483,8 +493,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
       case 'X':
         params.blackText = !params.blackText
         setFill(p5.mouseX, p5.mouseY, layers.drawingLayer)
-        // TODO; render layers, or something - need do the backgeound
-        // don't think this is possible. WAAAAH!
         break
     }
   }
@@ -508,22 +516,25 @@ export default function Sketch (p5, textManager, params, guiControl) {
     renderLayers()
   }
 
-  const paintNwords = (n) => () => {
+  // TODO: rename? ugh. because
+  // createPaintNwords(1000) yeilds a FUNCTION
+  const createPaintNwords = (n) => () => {
     for (let i = 0; i < n; i++) {
       paintWordInRegion(0, 0, p5.width, p5.height)
     }
   }
 
-  const macro1 = macroWrapper(paintNwords(50))
-  const macro2 = macroWrapper(paintNwords(1000))
-  const macro3 = macroWrapper(paintNwords(5000))
+  const macro1 = macroWrapper(createPaintNwords(50))
+  const macro2 = macroWrapper(createPaintNwords(1000))
+  const macro3 = macroWrapper(createPaintNwords(5000))
   const macro4 = macroWrapper(() => {
     const { rotate, rotation } = params
     params.rotate = true
     params.rotation = 45
-    paintNwords(1000)()
+    const paintALot = createPaintNwords(1000)
+    paintALot()
     params.rotation = -45
-    paintNwords(1000)()
+    paintALot()
     params.rotate = rotate
     params.rotation = rotation
   })
