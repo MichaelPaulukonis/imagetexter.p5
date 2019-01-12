@@ -250,14 +250,14 @@ export default function Sketch (p5, textManager, params, guiControl) {
     r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
     const yOffset = getYoffset(r.textAscent(), params.heightOffset)
-    let cg = blocGenerator(nextText, whOnly(p5), yOffset, r)
-    let blob = cg.next()
-    while (!blob.done) {
-      const bloc = blob.value
-      r.fill(getFill(bloc.x, bloc.y, params.paintMode))
-      paintTextAtPoint(bloc.text, bloc, r)
-      blob = cg.next()
+    const fill = bloc => r.fill(getFill(bloc.x, bloc.y, params.paintMode))
+    const paint = bloc => paintTextAtPoint(bloc.text, bloc, r)
+    let blocGen = blocGenerator(nextText, whOnly(p5), yOffset, r)
+    for (let bloc of blocGen) {
+      fill(bloc)
+      paint(bloc)
     }
+
     r.textAlign(p5.CENTER, p5.CENTER)
     renderLayers(params)
   }
