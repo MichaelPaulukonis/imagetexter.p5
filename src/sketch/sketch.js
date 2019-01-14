@@ -71,7 +71,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   p5.draw = () => {
     if (params.autoPaintGrid && imageLoaded) {
-      paintGrid(layers.drawingLayer)
+      paintGrid(layers.drawingLayer, getTextFunc(params.textMode, textManager))
       params.autoPaintGrid = false
     }
     if (params.autoSave && imageLoaded) {
@@ -135,6 +135,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
   this.clearDrawing = clearDrawing
 
+  const getTextFunc = (textMode, textManager) => {
+    const textFunc = (parseInt(textMode, 10) === 0 ? textManager.getchar : textManager.getWord)
+    return textFunc
+  }
+
   const paintTextAtPoint = (t, coords, target) => {
     const { x, y } = coords
     if (params.rotate) {
@@ -161,7 +166,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     // absolute positioning
     const x = locX + distanceJitter()
     const y = locY + distanceJitter()
-    setFill(x, y, layers.drawingLayer)
+    layers.drawingLayer.fill(getFill(x, y, params.paintMode))
     paintTextAtPoint(textManager.getWord(), { x, y }, layers.drawingLayer)
     renderLayers()
   }
@@ -250,13 +255,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
     r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
     const yOffset = getYoffset(r.textAscent(), params.heightOffset)
-    const fill = bloc => r.fill(getFill(bloc.x, bloc.y, params.paintMode))
-    const paint = bloc => paintTextAtPoint(bloc.text, bloc, r)
+    const fill = ((paintMode, layer) => bloc => layer.fill(getFill(bloc.x, bloc.y, paintMode)))(params.paintMode, r)
+    const paint = (layer => bloc => paintTextAtPoint(bloc.text, bloc, layer))(r)
     let blocGen = blocGenerator(nextText, whOnly(p5), yOffset, r)
-    for (let bloc of blocGen) {
-      fill(bloc)
-      paint(bloc)
-    }
+    let apx = (...fns) => gen => [...gen].map(b => fns.forEach(f => f(b)))
+    apx(fill, paint)(blocGen)
 
     r.textAlign(p5.CENTER, p5.CENTER)
     renderLayers(params)
@@ -304,48 +307,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
     if (curPaintMode < 0) curPaintMode = paintModes - 1
   }
 
-  // TODO: DEPRECATED
-  // replace with other method
-  function setFill (locX, locY, renderer) {
-    if (locX < 0) locX = 0
-    if (locX >= p5.width) locX = p5.width - 1
-    if (locY < 0) locY = 0
-    if (locY >= p5.height) locY = p5.height - 1
-
-    switch (parseInt(params.paintMode, 10)) {
-      case 0:
-      default:
-        if (params.blackText) {
-          renderer.fill(blackfield)
-        } else {
-          renderer.fill(whitefield)
-        }
-
-        break
-
-      // this is the one I'm really interested in for the project
-      case 2:
-        // This is adapted from the get() source - but is faster, since loadPixels()
-        // is not performed on each iteration
-        var pix = img.drawingContext.getImageData(locX, locY, 1, 1).data
-        renderer.fill(pix[0], pix[1], pix[2])
-        break
-
-      case 1:
-        // TODO: fill based on... mouseX/MouseY + offset?
-        renderer.fill(locX, locY, 100)
-        break
-
-      case 3:
-        renderer.fill(blackfield)
-        break
-
-      case 4:
-        renderer.fill(whitefield)
-        break
-    }
-  }
-
+  /**
+   * external refs include:
+   * p5 params, blackfield, whitefield, img
+   */
   const getFill = (locX, locY, paintMode) => {
     if (locX < 0) locX = 0
     if (locX >= p5.width) locX = p5.width - 1
@@ -461,9 +426,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
       case 'g':
         undo.takeSnapshot()
-        const textFunc = (parseInt(params.textMode, 10) === 0 ? textManager.getchar : textManager.getWord)
-        // paintGrid(layers.drawingLayer, textFunc)
-        paintGrid(layers.drawingLayer, textFunc)
+        paintGrid(layers.drawingLayer, getTextFunc(params.textMode, textManager))
         renderLayers()
         break
 
@@ -492,7 +455,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
       case 'x':
       case 'X':
         params.blackText = !params.blackText
-        setFill(p5.mouseX, p5.mouseY, layers.drawingLayer)
+        // setFill(p5.mouseX, p5.mouseY, layers.drawingLayer)
         break
     }
   }
