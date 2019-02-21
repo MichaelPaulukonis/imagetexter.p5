@@ -1,5 +1,6 @@
 import * as dat from './dat.gui.js'
 import saveAs from 'file-saver'
+import fonts from './fonts'
 
 export default class GuiControl {
   constructor (imageList) {
@@ -67,7 +68,8 @@ export default class GuiControl {
     let fc = document.getElementById('focus')
     if (fc) fc.onclick = setfocus
 
-    const fontList = ['Georgia', 'Helvetica', 'Courier New']
+    // const fontList = ['Georgia', 'Helvetica', 'Courier New']
+    const fontList = fonts
     var paramsInitial = {
       name: 'image.texter',
       open: this.openCanvasInNewTab,

@@ -71,6 +71,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   p5.draw = () => {
     if (params.autoPaintGrid && imageLoaded) {
+      // this is asynchronous
+      // so saveSketch will fire before being painted
       paintGrid(layers.drawingLayer, getTextFunc(params.textMode, textManager))
       params.autoPaintGrid = false
     }
@@ -486,6 +488,8 @@ export default function Sketch (p5, textManager, params, guiControl) {
       paintWordInRegion(0, 0, p5.width, p5.height)
     }
   }
+
+  // TODO: copy params in wrapper, and restore when finished.
 
   const macro1 = macroWrapper(createPaintNwords(50))
   const macro2 = macroWrapper(createPaintNwords(1000))

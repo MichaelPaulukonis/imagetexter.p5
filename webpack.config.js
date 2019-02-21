@@ -51,17 +51,7 @@ module.exports = {
         to: path.resolve(__dirname, 'dist', 'assets')
       }
     ])
-    // new webpack.optimize.CommonsChunkPlugin({
-    //   name: 'vendor',
-    //   minChunks: function (module) {
-    //     return module.context && module.context.indexOf('node_modules') !== -1;
-    //   },
-    // }),
-    // new webpack.optimize.CommonsChunkPlugin({
-    //   name: 'manifest'
-    // }),
   ],
-  // devtool: 'source-map',
   optimization: {
     splitChunks: {
       chunks: 'all'
