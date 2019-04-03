@@ -69,7 +69,7 @@ export default class GuiControl {
     if (fc) fc.onclick = setfocus
 
     // const fontList = ['Georgia', 'Helvetica', 'Courier New']
-    const fontList = fonts
+    const fontList = fonts.concat('SEGA')
     var paramsInitial = {
       name: 'image.texter',
       open: this.openCanvasInNewTab,

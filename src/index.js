@@ -25,6 +25,8 @@ const launchSketch = () => {
   function builder (p) {
     p.disableFriendlyErrors = true
     myP5 = new Sketch(p, t, gc.params, gc)
+    // gc.setupGui(myP5)
+    myP5.thingy('doo-dah!')
   }
 
   var myP5 = new P5(builder)

@@ -44,6 +44,11 @@ export default function Sketch (p5, textManager, params, guiControl) {
     textInputBox.value = text
   }
 
+  let sega
+  p5.preload = () => {
+    sega = p5.loadFont('assets/fonts/SEGA.TTF')
+  }
+
   p5.setup = () => {
     const canvas = p5.createCanvas(canvasSize.x, canvasSize.y)
     canvas.parent('sketch-holder')
@@ -116,26 +121,22 @@ export default function Sketch (p5, textManager, params, guiControl) {
     }
     renderTarget()
   }
-  this.renderLayers = renderLayers
 
   const renderTarget = () => {
     p5.image(layers.drawingLayer, 0, 0)
   }
-  this.renderTarget = renderTarget
 
   const clearLayer = (r = p5) => {
     r.blendMode(p5.NORMAL)
     var field = params.blackText ? whitefield : blackfield
     r.background(field)
   }
-  this.clearLayer = clearLayer
 
   const clearDrawing = () => {
     clearLayer(layers.drawingLayer)
     p5.blendMode(params.blackText ? p5.DARKEST : p5.LIGHTEST)
     renderLayers()
   }
-  this.clearDrawing = clearDrawing
 
   const getTextFunc = (textMode, textManager) => {
     const textFunc = (parseInt(textMode, 10) === 0 ? textManager.getchar : textManager.getWord)
@@ -210,9 +211,10 @@ export default function Sketch (p5, textManager, params, guiControl) {
   // const setTextSizeJitRange = makeSetJitter('textsizeJitRange') // unmapped
 
   const setFont = (font, layer = layers.drawingLayer) => {
-    layer.textFont(font)
+    // how clumsy! but as a POC it works
+    let tf = (font === 'SEGA') ? sega : font
+    layer.textFont(tf)
   }
-  this.setFont = setFont
 
   const imageReady = () => {
     renderSetup(layers.p5)
@@ -249,7 +251,6 @@ export default function Sketch (p5, textManager, params, guiControl) {
     imageLoaded = false
     img = p5.loadImage(filename, imageReady)
   }
-  this.setImage = setImage
 
   // print a grid of characters from upper-left to lower-right
   const paintGrid = (r = layers.drawingLayer, nextText = textManager.getchar) => {
@@ -505,4 +506,26 @@ export default function Sketch (p5, textManager, params, guiControl) {
     params.rotate = rotate
     params.rotation = rotation
   })
+
+  this.renderLayers = renderLayers
+  this.renderTarget = renderTarget
+  this.clearLayer = clearLayer
+  this.clearDrawing = clearDrawing
+  this.setFont = setFont
+  this.setImage = setImage
+  this.thingy = (msg) => {
+    console.log(`message: ${msg}`)
+  }
+
+  // return {
+  //   renderLayers,
+  //   renderTarget,
+  //   clearLayer,
+  //   clearDrawing,
+  //   setFont,
+  //   setImage,
+  //   thingy: (msg) => {
+  //     console.log(`message: ${msg}`)
+  //   }
+  // }
 }
