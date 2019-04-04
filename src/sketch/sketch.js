@@ -44,9 +44,18 @@ export default function Sketch (p5, textManager, params, guiControl) {
     textInputBox.value = text
   }
 
-  let sega
+  let fontList = {}
+  const loadedFonts = ['ATARCC__', 'ATARCE__', 'ATARCS__', 'AtariClassic-Regular',
+    'BlackCasper', 'BMREA___', 'CableDingbats', 'carbontype', 'clothing logos', 'Credit Cards',
+    'D3Digitalism', 'D3DigitalismI', 'D3DigitalismR', 'edunline', 'enhanced_dot_digital-7', 'Fast Food logos',
+    'Harting_plain', 'illustrate-it', 'openlogos', 'RecycleIt', 'retro_computer_personal_use', 'SEGA',
+    'Smartphone Color Pro', 'Social Icons Pro Set 1 - Rounded', 'social_shapes', 'TRENU___',
+    'Type Icons Color', 'Type Icons', 'VT323-Regular', 'Youkairo']
+
   p5.preload = () => {
-    sega = p5.loadFont('assets/fonts/SEGA.TTF')
+    loadedFonts.forEach(font => {
+      fontList[font] = p5.loadFont(`assets/fonts/${font}.ttf`)
+    })
   }
 
   p5.setup = () => {
@@ -67,7 +76,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   }
 
   const renderSetup = (r) => {
-    r.pixelDensity(1)
+    r.pixelDensity(2)
     clearLayer(r)
     r.textSize(params.textsize)
     r.textAlign(p5.CENTER, p5.CENTER)
@@ -212,7 +221,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
 
   const setFont = (font, layer = layers.drawingLayer) => {
     // how clumsy! but as a POC it works
-    let tf = (font === 'SEGA') ? sega : font
+    let tf = (loadedFonts.indexOf(font) > -1) ? fontList[font] : font
     layer.textFont(tf)
   }
 

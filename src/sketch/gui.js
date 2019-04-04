@@ -62,14 +62,20 @@ export default class GuiControl {
         // https://ourcodeworld.com/articles/read/682/what-does-the-not-allowed-to-navigate-top-frame-to-data-url-javascript-exception-means-in-google-chrome
         var win = window.open()
         win.document.write('<iframe src="' + img +
-                    '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>')
+          '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>')
       }
     }
     let fc = document.getElementById('focus')
     if (fc) fc.onclick = setfocus
 
     // const fontList = ['Georgia', 'Helvetica', 'Courier New']
-    const fontList = fonts.concat('SEGA')
+    const fontList = fonts.concat(['ATARCC__', 'ATARCE__', 'ATARCS__', 'AtariClassic-Regular',
+      'BlackCasper', 'BMREA___', 'CableDingbats', 'carbontype', 'clothing logos', 'Credit Cards',
+      'D3Digitalism', 'D3DigitalismI', 'D3DigitalismR', 'edunline', 'enhanced_dot_digital-7', 'Fast Food logos',
+      'Harting_plain', 'illustrate-it', 'openlogos', 'RecycleIt', 'retro_computer_personal_use', 'SEGA',
+      'Smartphone Color Pro', 'Social Icons Pro Set 1 - Rounded', 'social_shapes', 'TRENU___',
+      'Type Icons Color', 'Type Icons', 'VT323-Regular', 'Youkairo'])
+
     var paramsInitial = {
       name: 'image.texter',
       open: this.openCanvasInNewTab,
