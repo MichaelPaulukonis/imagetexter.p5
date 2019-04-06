@@ -202,6 +202,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     params.textsize = (params.textsize + step * direction)
     if (params.textsize < 1) params.textsize = step
     layers.drawingLayer.textSize(params.textsize)
+    layers.p5.textSize(params.textsize)
   }
 
   const makeJitterGetter = (param) => () => {
@@ -264,6 +265,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
   // print a grid of characters from upper-left to lower-right
   const paintGrid = (r = layers.drawingLayer, nextText = textManager.getchar) => {
     r.textSize(params.textsize)
+    layers.p5.textSize(params.textsize)
     r.textAlign(p5.LEFT, p5.BOTTOM) // this "works" but leaves us with a blank line on top (and other artifacts)
 
     const yOffset = getYoffset(r.textAscent(), params.heightOffset)

@@ -13,7 +13,7 @@ module.exports = {
   },
   devServer: {
     contentBase: path.resolve(__dirname, 'dist'),
-    port: 8080,
+    port: 8085,
     open: true,
     openPage: '',
     stats: 'normal'
