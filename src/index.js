@@ -18,8 +18,8 @@ let suppliedText = queryParams.text || ''
 let t = new TextManager(suppliedText)
 
 let gc = new GuiControl(IMAGES)
-gc.params.autoPaintGrid |= queryParams.autoPaintGrid
-gc.params.autoSave = queryParams.autoSave || false
+gc.params.autoPaintGrid |= !!queryParams.autoPaintGrid
+gc.params.autoSave = !!queryParams.autoSave || false
 
 const launchSketch = () => {
   function builder (p) {

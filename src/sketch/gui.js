@@ -93,7 +93,7 @@ export default class GuiControl {
       textMode: 0,
       autoPaintMode: false,
       randomSizeMode: true,
-      font: fontList[0],
+      font: fontList[5], // TODO: randomize, parameterize, etc.
       rotate: false,
       rotation: 0,
       images: imageList,

@@ -13,8 +13,8 @@
     "lint": "standard --fix",
     "cypress": "cypress run --reporter junit --reporter-options \"mochaFile=test/results/cypress-results.xml,toConsole=true\"",
     "cypress:open": "cypress open",
-    "cypress:buildserver": "start-server-and-test start http://localhost:8080 cypress",
-    "cypress:open:buildserver": "start-server-and-test start http://localhost:8080 cypress:open"
+    "cypress:buildserver": "start-server-and-test start http://localhost:8085 cypress",
+    "cypress:open:buildserver": "start-server-and-test start http://localhost:8085 cypress:open"
   },
   "dependencies": {
     "file-saver": "^2.0.0",

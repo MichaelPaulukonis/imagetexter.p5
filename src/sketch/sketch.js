@@ -71,7 +71,7 @@ export default function Sketch (p5, textManager, params, guiControl) {
     })
     curPaintMode = params.paintMode || 2 // paint with background
     guiControl.setupGui(this)
-    setRandomImage()
+    setRandomImage() // TODO: if supplied, use supplied, otherwise random
     undo = new Undo(layers, renderLayers, 10)
   }
 
@@ -89,10 +89,12 @@ export default function Sketch (p5, textManager, params, guiControl) {
       // so saveSketch will fire before being painted
       paintGrid(layers.drawingLayer, getTextFunc(params.textMode, textManager))
       params.autoPaintGrid = false
+      params.autoPainted = true
     }
-    if (params.autoSave && imageLoaded) {
+    if (params.autoSave && imageLoaded && params.autoPainted) {
       this.saveSketch()
       params.autoSave = false
+      params.autoPainted = false
     }
 
     if (params.autoPaintMode) {
